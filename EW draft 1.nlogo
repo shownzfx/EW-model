@@ -38,7 +38,7 @@ to setup
   create-orgs 1 [
     set size 4
     set color red
-    set budget 1000
+    set budget org-budget ;org-budget is slider
     set initial-budget budget ; initial budget for each tick
     set repairRatio 0.6
     set vulnerability 0
@@ -91,7 +91,7 @@ to update-pcolor
 end
 
 to renew-budget
- set budget 1000
+ set budget org-budget
  set initial-budget budget
 end
 
@@ -122,7 +122,7 @@ to take-damage
     [take-slight-damage]
   ]
 
-  set infra-quality infra-quality - current-damage
+  set infra-quality infra-quality - current-damage ; what if infra-quality goes below 0
   set damage-exp lput current-damage damage-exp
 
 end
@@ -147,7 +147,7 @@ to calculate-repairCost
   ask serviceArea [
     if infra-quality < initial-quality [
       let decline initial-quality - infra-quality  ; how does the infra-qualty reduce compared to the initial state
-      set repairCost decline * (20 + (random (50 - 20)))  ; each patch repair cost between 20 and 50
+      set repairCost decline * 20 + random 20  ; each patch repair cost between 20 and 50
     ]
   ]
 
@@ -170,7 +170,7 @@ to repair
           ]
        ]
     ]
-    set budget budget  - repairBudget ; update budget
+    set budget budget  - repairBudget + money ; update budget
 
   ]
 
@@ -184,9 +184,7 @@ to adapt
     let adaptBudget (1 - repairRatio) * initial-budget
     let numAdapt floor (adaptBudget / adaptCost)
     ask min-n-of numAdapt serviceArea [infra-quality][
-      if random-float 1 < 0.4 [
         set prevention prevention +  1
-      ]
     ]
 
     set budget budget - adaptBudget
@@ -205,10 +203,10 @@ end
 
 
 to fix-infra
-  set infra-quality initial-quality + random-float 0.5
+  set infra-quality initial-quality + random-float 1 - 0.5
 end
 
-to prevention-decay
+to prevention-decay  ; a procedure not used so far
   ask orgs [
     let org-ewfreq length org-ewexp
     if  (org-ewfreq > 5) [  ; after expereincing 5 ew, prevention goes away
@@ -284,21 +282,6 @@ NIL
 NIL
 1
 
-SLIDER
-19
-224
-191
-257
-p-rain
-p-rain
-0
-1
-0.3
-0.01
-1
-NIL
-HORIZONTAL
-
 BUTTON
 58
 72
@@ -345,21 +328,6 @@ NIL
 1
 
 SLIDER
-19
-267
-191
-300
-increased-quality
-increased-quality
-0
-5
-1.0
-0.1
-1
-NIL
-HORIZONTAL
-
-SLIDER
 20
 310
 192
@@ -368,7 +336,7 @@ intensity-threshold
 intensity-threshold
 0.6
 1
-0.71
+0.93
 0.01
 1
 NIL
@@ -557,6 +525,32 @@ MONITOR
 budget
 [budget] of orgs
 17
+1
+11
+
+SLIDER
+59
+388
+231
+421
+org-budget
+org-budget
+1000
+2000
+1000.0
+50
+1
+NIL
+HORIZONTAL
+
+MONITOR
+1054
+398
+1188
+443
+mean current damage
+mean [current-damage] of serviceArea
+2
 1
 11
 
