@@ -66,20 +66,23 @@ end
 to go
 
   to-rain
+  ask orgs [renew-budget]
 
-  ask orgs [; check the current infra-quality after taking damage
+  if real-rain > intensity-threshold[
+    ask orgs [; check the current infra-quality after taking damage
 
     calculate-repairCost ; scan infra, calculate costs and decide whether to repair or add prevention
     repair ; do repair or adapt (adding preventions）
     adapt
     recolor
-    renew-budget
+    ]
   ]
 
 
   ask serviceArea [
     update-pcolor
   ]
+
 
 ;  prevention-decay
   tick
@@ -129,15 +132,15 @@ end
 
 
 to take-slight-damage
-   set current-damage real-rain * 0.3 + (prevention * buffer); connect damage with rain; buffer, a slider, is the unit of damage reduced by the presence of each prevention (
+   set current-damage real-rain * 0.3 - max (list 0 (real-rain * 0.3 - (prevention * buffer))); connect damage with rain; buffer, a slider, is the unit of damage reduced by the presence of each prevention (
 end
 
 to take-moderate-damage
-  set current-damage real-rain * 0.5 + (prevention * buffer)
+  set current-damage real-rain * 0.5 - max (list 0 (real-rain * 0.3 - (prevention * buffer)))
 end
 
 to take-severe-damage
-  set current-damage real-rain * 0.8 + (prevention * buffer)
+  set current-damage real-rain * 0.8 - max (list 0 (real-rain * 0.3 - (prevention * buffer)))
 end
 
 
@@ -147,7 +150,7 @@ to calculate-repairCost
   ask serviceArea [
     if infra-quality < initial-quality [
       let decline initial-quality - infra-quality  ; how does the infra-qualty reduce compared to the initial state
-      set repairCost decline * 20 + random 20  ; each patch repair cost between 20 and 50
+      set repairCost decline * (20 + random 10) ; each patch repair cost between 20 and 50
     ]
   ]
 
@@ -180,7 +183,7 @@ end
 to adapt
   if (length ewexp) > 8   ; ewexp are the freq of events the org remembers
   [
-    let adaptCost 100 ; to add each capital investment to enhance infra resilience, the cost is 50
+    let adaptCost 50 ; to add each capital investment to enhance infra resilience, the cost is 50
     let adaptBudget (1 - repairRatio) * initial-budget
     let numAdapt floor (adaptBudget / adaptCost)
     ask min-n-of numAdapt serviceArea [infra-quality][
@@ -227,7 +230,6 @@ to recolor
   set vulnerability mean [infra-vul] of serviceArea
   set color red - vulnerability * 5
 end
-
 
 
 
@@ -305,7 +307,7 @@ MONITOR
 759
 130
 Num EW 
-[ewfreq] of orgs
+ewfreq
 0
 1
 11
@@ -336,7 +338,7 @@ intensity-threshold
 intensity-threshold
 0.6
 1
-0.93
+0.66
 0.01
 1
 NIL
@@ -359,24 +361,6 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot mean [infra-quality] of serviceArea\n"
-
-PLOT
-804
-349
-1004
-499
-infra quality distribution
-NIL
-NIL
-0.0
-3.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 0.01 1 -16777216 true "" "histogram [infra-quality] of serviceArea\n"
 
 MONITOR
 869
@@ -419,8 +403,8 @@ SLIDER
 buffer
 buffer
 0
-1
-0.0
+0.2
+0.05
 0.01
 1
 NIL
@@ -467,17 +451,6 @@ sum [prevention] of serviceArea
 11
 
 MONITOR
-583
-32
-715
-77
-Num EW remembered
-[length ewexp] of orgs
-17
-1
-11
-
-MONITOR
 870
 126
 944
@@ -510,7 +483,7 @@ NIL
 0.0
 10.0
 0.0
-10.0
+5.0
 true
 false
 "" ""
@@ -537,7 +510,7 @@ org-budget
 org-budget
 1000
 2000
-1000.0
+1150.0
 50
 1
 NIL
@@ -553,6 +526,35 @@ mean [current-damage] of serviceArea
 2
 1
 11
+
+MONITOR
+1106
+468
+1185
+513
+min damage
+min [current-damage] of serviceArea
+2
+1
+11
+
+PLOT
+804
+349
+1004
+499
+infra quality distribution
+NIL
+NIL
+0.0
+3.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 0.01 1 -16777216 true "" "histogram [infra-quality] of serviceArea\n"
 
 @#$#@#$#@
 ## WHAT IS IT?
