@@ -6,21 +6,20 @@ globals [
   ewexp  ; a list documenting exp with extreme weather events
   serviceArea ; the agency's service area
 
+
 ]
 
 orgs-own [; doc intensity of extreme weather
-    ; doc frequency of ew
-
   budget ; total budget for maintainance and adaptation (preventive measures)
-  org-ewexp
+  org-ewexp ; doc freq of ew
   initial-budget ; starting budget for each tick
-  repairRatio ; ratio of repair (maintain) to adaptation
+  ;repairRatio ratio of repair (maintain) to adaptation (a slider on the interface)
   vulnerability ; average of mean vulnerablity of its service area
 ]
 
 patches-own [
   infra-quality  ; infra conditions on the serviceArea; updated each tick
-  initial-quality  ; initial conditions of the infra; for fix actions, the infra-quality restore to initial-infra with some randomness
+  initial-quality  ; initial conditions of the infra; for fix actions, the infra-quality restore to initial-quality with some randomness
   owner ; identity which transit the patches belong to
   repairCost
   current-damage ; damage for each tick
@@ -40,20 +39,20 @@ to setup
     set color red
     set budget org-budget ;org-budget is slider
     set initial-budget budget ; initial budget for each tick
-    set repairRatio 0.6
     set vulnerability 0
     set org-ewexp []
 
 
       ask patches in-radius 5 [
         set owner 1
-        set infra-quality random-float 1
-        if infra-quality = 0 [set infra-quality 0.01]  ; avoid dividing by zero
+        set infra-quality random 100
+        if infra-quality = 0 [set infra-quality 1] ; avoid dividing by zero
         set initial-quality infra-quality
-        set prevention random 10
+        set prevention random 20
+        ;if prevention > infra-quality [set prevention infra-quality - 5 ]
         set current-damage 0
         set damage-exp []
-        ifelse prevention != 0 [set infra-vul  1 / ((infra-quality) * prevention)] [set infra-vul (1 / infra-quality)] ; infra-vul is inversely related to infra-quality
+;        ifelse prevention != 0 [set infra-vul  1 / ((infra-quality) * prevention)] [set infra-vul (1 / infra-quality)] ; infra-vul is inversely related to infra-quality
         update-pcolor
     ]
   ;  set service-area patches with [owner = 1]
@@ -64,13 +63,12 @@ to setup
 end
 
 to go
-
+  ask orgs [renew-budget] ; budget renew every tick
   to-rain
-  ask orgs [renew-budget]
 
   if real-rain > intensity-threshold[
     ask orgs [; check the current infra-quality after taking damage
-
+    ask serviceArea [take-damage]
     calculate-repairCost ; scan infra, calculate costs and decide whether to repair or add prevention
     repair ; do repair or adapt (adding preventions）
     adapt
@@ -90,11 +88,11 @@ to go
 end
 
 to update-pcolor
-  set pcolor scale-color green infra-quality -3 3
+  set pcolor scale-color green infra-quality 0 100
 end
 
 to renew-budget
- set budget org-budget
+ set budget org-budget ; now every tick the budget starts over
  set initial-budget budget
 end
 
@@ -102,9 +100,8 @@ end
 to to-rain
   set real-rain random-float 1
   if real-rain > intensity-threshold [ ;intensity-threshold is slider between 0.6 to 1
-    set ewfreq ewfreq + 1
+    set ewfreq ewfreq + 1  ; global var of ew
     set ewexp fput real-rain ewexp
-    ask serviceArea [take-damage]
   ]
 
 ask orgs [
@@ -126,75 +123,97 @@ to take-damage
   ]
 
   set infra-quality infra-quality - current-damage ; what if infra-quality goes below 0
+  if infra-quality <= 0 [set infra-quality 1]
+  if infra-quality > 100 [set infra-quality 100]
   set damage-exp lput current-damage damage-exp
 
 end
 
 
 to take-slight-damage
-   set current-damage real-rain * 0.3 - max (list 0 (real-rain * 0.3 - (prevention * buffer))); connect damage with rain; buffer, a slider, is the unit of damage reduced by the presence of each prevention (
+   set current-damage real-rain * 5 - max (list 0 (real-rain * 10 - prevention)); connect damage with rain; buffer, a slider, is the unit of damage reduced by the presence of each prevention (
 end
 
 to take-moderate-damage
-  set current-damage real-rain * 0.5 - max (list 0 (real-rain * 0.3 - (prevention * buffer)))
+  set current-damage real-rain * 5 - max (list 0 (real-rain * 10 - prevention))
 end
 
 to take-severe-damage
-  set current-damage real-rain * 0.8 - max (list 0 (real-rain * 0.3 - (prevention * buffer)))
+  set current-damage real-rain * 5 - max (list 0 (real-rain * 10 - prevention))
 end
 
 
 
 
 to calculate-repairCost
-  ask serviceArea [
-    if infra-quality < initial-quality [
+  ask serviceArea with [infra-quality < initial-quality ][
       let decline initial-quality - infra-quality  ; how does the infra-qualty reduce compared to the initial state
-      set repairCost decline * (20 + random 10) ; each patch repair cost between 20 and 50
+      set repairCost decline * 20; each patch repair cost between 20 and 50 for each quality decline
     ]
-  ]
 
 end
 
 to repair
-  let TotalRepairCost sum [repairCost] of serviceArea
   let repairBudget repairRatio * budget
-  ifelse repairBudget  > TotalRepairCost  [
-    ask serviceArea [fix-infra]  ; if enough money to cover all repair cost, fix all
-    set budget budget - TotalRepairCost ; update budget
-  ][
-    let repairCostRank sort-on [repairCost] serviceArea
-    let money repairBudget
-    foreach repairCostRank [ x -> ask x [
-          if repairCost < money [   ; if not enough to cover all repair cost, fix the spots that cost most (infra quality declined most)
-            fix-infra
-            set money money - repairCost
+  let originalRepairBudget repairBudget
 
-          ]
-       ]
-    ]
-    set budget budget  - repairBudget + money ; update budget
-
+  let repairCostRank sort-on [repairCost] serviceArea
+  foreach repairCostRank [ x -> ask x [
+        set repairBudget fix-infra repairBudget
+     ]
   ]
-
-
+  let moneySpent originalRepairBudget - repairBudget
+  set budget budget - moneySpent
 end
 
+to-report fix-infra [money]
+  if repairCost < money [
+    set infra-quality initial-quality
+    set money money - repairCost
+  ]
+  report money
+end
+
+;to repair
+;  let damagedInfra serviceArea with [infra-quality < initial-quality]
+;  let TotalRepairCost sum [repairCost] of damagedInfra
+;  let repairBudget repairRatio * budget
+;
+;  fix-infra repairBudget
+;end
+;
+;
+;
+;to fix-infra [x]
+;  ifelse repairBudget >= TotalRepairCost [
+;    ask damagedInfra [set infra-quality initial-quality
+;      set repairBudget - TotalRepairCost
+;    ][
+;
+;
+
+
+
 to adapt
-  if (length ewexp) > 8   ; ewexp are the freq of events the org remembers
-  [
+;  if (length ewexp) > 8   ; ewexp are the freq of events the org remembers
+;  [
     let adaptCost 50 ; to add each capital investment to enhance infra resilience, the cost is 50
     let adaptBudget (1 - repairRatio) * initial-budget
-    let numAdapt floor (adaptBudget / adaptCost)
-    ask min-n-of numAdapt serviceArea [infra-quality][
-        set prevention prevention +  1
+    let candidatePatches ( serviceArea with [prevention < 20])  ; only add prevention to serviceArea with less than 20 preventions on them already
+
+
+    if candidatePatches != nobody [
+      let numAdapt min (list floor (adaptBudget / adaptCost) count candidatePatches)
+      ask min-n-of numAdapt candidatePatches [infra-quality][
+          set prevention prevention + 1
+      ]
     ]
 
-    set budget budget - adaptBudget
+   set budget budget - adaptBudget
 
   ;  set repairRatio repairRatio - 0.05          ; reduce repair ratio by 5 percent to increase money for future adaptation
   ;  if repairRatio < 0.4 [set repairRatio 0.4]
-  ]
+ ; ]
 
   if ticks > 24 and  ticks mod 24 = 0  and ( length ewexp < 7 ); update budget ratio every two years
 
@@ -202,11 +221,6 @@ to adapt
     set repairRatio repairRatio + 0.05
    ]
 
-end
-
-
-to fix-infra
-  set infra-quality initial-quality + random-float 1 - 0.5
 end
 
 to prevention-decay  ; a procedure not used so far
@@ -225,13 +239,12 @@ end
 
 to recolor
   ask serviceArea [
+    if infra-quality = 0 [set infra-quality 1]
      ifelse prevention != 0 [set infra-vul  1 / ((infra-quality) * prevention)] [set infra-vul (1 / infra-quality)]
   ]
   set vulnerability mean [infra-vul] of serviceArea
   set color red - vulnerability * 5
 end
-
-
 
 
 
@@ -261,8 +274,8 @@ GRAPHICS-WINDOW
 10
 -10
 10
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -395,21 +408,6 @@ mean [infra-quality] of serviceArea
 1
 11
 
-SLIDER
-21
-347
-193
-380
-buffer
-buffer
-0
-0.2
-0.05
-0.01
-1
-NIL
-HORIZONTAL
-
 MONITOR
 586
 83
@@ -437,7 +435,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 1 -16777216 true "" "histogram [prevention] of serviceArea"
+"default" 1.0 0 -16777216 true "" "plot mean [prevention] of serviceArea"
 
 MONITOR
 983
@@ -473,10 +471,10 @@ vul
 11
 
 PLOT
-1035
-156
-1235
-306
+807
+350
+1007
+500
 mean damage
 NIL
 NIL
@@ -488,13 +486,13 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot mean [current-damage] of serviceArea"
+"default" 1.0 0 -8053223 true "" "plot mean [current-damage] of serviceArea"
 
 MONITOR
-614
-481
-671
-526
+597
+432
+654
+477
 budget
 [budget] of orgs
 17
@@ -508,10 +506,10 @@ SLIDER
 421
 org-budget
 org-budget
+0
+50000
+19000.0
 1000
-2000
-1150.0
-50
 1
 NIL
 HORIZONTAL
@@ -538,23 +536,64 @@ min [current-damage] of serviceArea
 1
 11
 
-PLOT
-804
-349
-1004
-499
-infra quality distribution
+SLIDER
+113
+460
+285
+493
+repairRatio
+repairRatio
+0
+1
+0.49
+0.01
+1
 NIL
-NIL
-0.0
-3.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 0.01 1 -16777216 true "" "histogram [infra-quality] of serviceArea\n"
+HORIZONTAL
+
+MONITOR
+1008
+464
+1091
+509
+max damage
+max [current-damage] of serviceArea
+2
+1
+11
+
+MONITOR
+618
+134
+723
+179
+mean repair cost
+mean [repairCost] of serviceArea
+0
+1
+11
+
+MONITOR
+1097
+76
+1183
+121
+# prevention
+mean [prevention] of serviceArea
+0
+1
+11
+
+MONITOR
+1076
+148
+1171
+193
+Min prevention
+min [prevention] of serviceArea
+0
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
