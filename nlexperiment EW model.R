@@ -3,6 +3,7 @@
 library(nlexperiment)
 nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
 nl_netlogo_path()
+setwd("C:/Users/shown/Documents/GitHub/EW-model")
 
 experiment <- nl_experiment(
   model_file = "C:/Users/shown/Documents/GitHub/EW-model/EW draft 1.nlogo",
