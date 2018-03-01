@@ -255,7 +255,7 @@ BUTTON
 72
 121
 105
-NIL
+step
 go
 NIL
 1
