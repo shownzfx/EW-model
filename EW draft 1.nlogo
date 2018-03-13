@@ -38,7 +38,7 @@ to setup
   create-orgs 1 [
     set size 4
     set color red
-    set budget org-budget ;org-budget is slider
+    set budget orgBudget ;orgBudget is slider
     set initialBudget budget ; initial budget for each tick
     set vulnerability 0
     set orgRainExp []
@@ -49,7 +49,7 @@ to setup
         set infraQuality random 100
         if infraQuality = 0 [set infraQuality 1] ; avoid dividing by zero
         set initialQuality infraQuality
-        set prevention random 20
+        set prevention random maxPrevention
         set currentDamage 0
         set damageExp []
   ;        ifelse prevention != 0 [set infraVulnerability  1 / ((infraQuality) * prevention)] [set infraVulnerability (1 / infraQuality)] ; infraVulnerability is inversely related to infraQuality
@@ -70,8 +70,8 @@ to go
     [
        renew-budget
        let lastYearExtremeWeather sublist orgRainExp 0 min list 11 length orgRainExp
-       let orgExtremeWeatherFreq filter [ i -> i > intensity-threshold] lastYearExtremeWeather
-       if length orgExtremeWeatherFreq > 3  [adapt] ; if in the last year exp three extreme weather, adapt
+       let orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastYearExtremeWeather
+       if length orgExtremeWeatherFreq > adaptThreshold  [adapt] ; if in the last year exp three extreme weather, adapt; make a slider; adapt is they have one extreme weather;
     ]
   ]
 
@@ -92,7 +92,7 @@ to update-pcolor
 end
 
 to renew-budget
- set budget org-budget  ;
+ set budget orgBudget  ;
  set initialBudget budget
 end
 
@@ -100,7 +100,7 @@ end
 to to-rain  ; rains every step
   set rainProb random-float 1 ; change real rain to intense weather
   set rainExp fput rainProb rainExp
-  if rainProb > intensity-threshold [ ;intensity-threshold is slider between 0.6 to 1
+  if rainProb > intensityThreshold [ ;intensityThreshold is slider between 0.6 to 1
     set extremeWeatherFreq extremeWeatherFreq + 1  ; global var of ew
     ask orgs [; check the current infraQuality after taking damage
     set orgRainExp fput rainProb orgRainExp
@@ -138,7 +138,7 @@ end
 to calculate-repairCost
   ask serviceArea with [infraQuality < initialQuality ][
       let decline initialQuality - infraQuality  ; how does the infra-qualty reduce compared to the initial state
-      set repairCost decline * 10; each patch repair cost of 10 for each quality decline
+      set repairCost decline * 1; each patch repair cost of 10 for each quality decline; 1 is the unit repair cost, put on the same scale as daptation cost per patch
     ]
 
 end
@@ -148,7 +148,7 @@ to repair
   let repairBudget orgRepairBudget ; define this for patch use
   let originalRepairBudget repairBudget
 
-  let repairCostRank sort-on [repairCost] serviceArea
+  let repairCostRank sort-on [(- repairCost)] serviceArea
   foreach repairCostRank [ x -> ask x [
         set repairBudget fix-infra repairBudget; repairCost specific to patches, repair budget specific to orgs
      ]
@@ -168,22 +168,42 @@ end
 
 to adapt ; adapt every 12 ticks, turtle procedure
 
-    let adaptCost 50 ; to add each capital investment to enhance infra resilience, the cost is 50
-    let adaptBudget (1 - repairRatio) * initialBudget
-    let candidatePatches ( serviceArea with [prevention < 20])  ; only add prevention to serviceArea with less than 20 preventions on them already
+  let adaptCost 1 ; to add each capital investment to enhance infra resilience, the cost is 50
+  let adaptBudget (1 - repairRatio) * initialBudget
+  let initialAdaptBudget adaptBudget
+;  let candidatePatches ( serviceArea with [prevention < maxPrevention])  ; only add prevention to serviceArea with less than maxPrevention preventions on them already
+  let canAdapt true
 
+  if any? serviceArea with [prevention < maxPrevention] [
+    while [adaptBudget > 0 and canAdapt] [
 
-    if candidatePatches != nobody [
-      let numAdapt min (list floor (adaptBudget / adaptCost) count candidatePatches)
-      ask min-n-of numAdapt candidatePatches [infraQuality][
-          set prevention prevention + 1
+      ;;; problem is you have two different variables, candidatePatches and candidatePatchesUpdate
+      let candidatePatchesUpdate ( serviceArea with [prevention < maxPrevention])
+      let numAdapt count candidatePatchesUpdate
+      if numAdapt = 0 [
+        set canAdapt false
       ]
-    ]
 
-   set budget budget - adaptBudget
+      ; min (list floor (adaptBudget / adaptCost) count candidatePatches)
+      ask min-n-of numAdapt candidatePatchesUpdate [infraQuality][
+        ifelse adaptBudget > adaptCost
+        [
+          set prevention prevention + 1
+          ;if prevention > maxPrevention
+          ;[ print "prevention > maxPrevention" ]
+          set adaptBudget adaptBudget - adaptCost
+        ]
+        [
+          set canAdapt false
+        ]
+      ] ; select pathes with less than maxPrevention, rank them by worst infraQuality, loop over these patches adding prevention 1 to each of them; a  patch does not get a 2nd prevention until
+    ]   ; the org finishes one round of looping over the entire set of available patches.
+  ]
 
+  let moneySpent initialAdaptBudget - adaptBudget
+
+  set budget budget - moneySpent
 end
-
 
 
 to infra-decay
@@ -199,10 +219,6 @@ to recolor
   set vulnerability mean [infraVulnerability] of serviceArea
   set color red - vulnerability * 5
 end
-
-
-
-
 
 
 @#$#@#$#@
@@ -268,10 +284,10 @@ NIL
 1
 
 MONITOR
-696
-85
-759
-130
+589
+122
+652
+167
 Num EW
 extremeWeatherFreq
 0
@@ -296,16 +312,16 @@ NIL
 1
 
 SLIDER
-20
-310
-192
-343
-intensity-threshold
-intensity-threshold
-0.6
+15
+195
+187
+228
+intensityThreshold
+intensityThreshold
+0
 1
-0.66
-0.01
+0.6
+0.1
 1
 NIL
 HORIZONTAL
@@ -329,10 +345,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [infraQuality] of serviceArea\n"
 
 MONITOR
-869
-26
-970
-71
+793
+20
+894
+65
 Min infra quality
 min [infraQuality] of serviceArea
 2
@@ -340,10 +356,10 @@ min [infraQuality] of serviceArea
 11
 
 MONITOR
-871
-77
-976
-122
+795
+71
+900
+116
 Max infra quality
 max [infraQuality] of serviceArea
 2
@@ -351,10 +367,10 @@ max [infraQuality] of serviceArea
 11
 
 MONITOR
-979
-24
-1091
-69
+795
+121
+907
+166
 Mean infra quality
 mean [infraQuality] of serviceArea
 2
@@ -362,10 +378,10 @@ mean [infraQuality] of serviceArea
 11
 
 MONITOR
-586
-83
-689
-128
+663
+456
+766
+501
 Total repair cost
 sum [repairCost] of serviceArea
 2
@@ -391,10 +407,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [prevention] of serviceArea"
 
 MONITOR
-983
-77
-1087
-122
+1041
+187
+1145
+232
 Total Prevention
 sum [prevention] of serviceArea
 17
@@ -402,10 +418,10 @@ sum [prevention] of serviceArea
 11
 
 MONITOR
-870
-126
-944
-171
+664
+405
+738
+450
 repairRatio
 [repairRatio] of orgs
 2
@@ -453,16 +469,16 @@ org repair budgets
 11
 
 SLIDER
-20
-350
-192
-383
-org-budget
-org-budget
+15
+235
+185
+268
+orgBudget
+orgBudget
 0
-100000
-50000.0
 1000
+1000.0
+100
 1
 NIL
 HORIZONTAL
@@ -479,9 +495,9 @@ mean [currentDamage] of serviceArea
 11
 
 MONITOR
-1110
+1107
 339
-1189
+1186
 384
 min damage
 min [currentDamage] of serviceArea
@@ -490,15 +506,15 @@ min [currentDamage] of serviceArea
 11
 
 SLIDER
-23
-392
-195
-425
+15
+280
+185
+313
 repairRatio
 repairRatio
 0
 1
-0.43
+0.26
 0.01
 1
 NIL
@@ -516,10 +532,10 @@ max [currentDamage] of serviceArea
 11
 
 MONITOR
-618
-134
-723
-179
+661
+505
+766
+550
 mean repair cost
 mean [repairCost] of serviceArea
 0
@@ -527,10 +543,10 @@ mean [repairCost] of serviceArea
 11
 
 MONITOR
-1097
-76
-1203
-121
+1039
+136
+1145
+181
 mean prevention
 mean [prevention] of serviceArea
 0
@@ -538,10 +554,10 @@ mean [prevention] of serviceArea
 11
 
 MONITOR
-1076
-148
-1171
-193
+1039
+40
+1134
+85
 Min prevention
 min [prevention] of serviceArea
 0
@@ -549,30 +565,60 @@ min [prevention] of serviceArea
 11
 
 SLIDER
-20
-432
-202
-465
+15
+320
+185
+353
 ExtremeWeatherDamage
 ExtremeWeatherDamage
 0
 20
-14.0
+5.0
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-1040
-216
-1140
-261
+1039
+87
+1139
+132
 max prevention
 max [prevention] of serviceArea
 0
 1
 11
+
+SLIDER
+14
+364
+186
+397
+maxPrevention
+maxPrevention
+0
+100
+48.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+12
+407
+184
+440
+adaptThreshold
+adaptThreshold
+0
+10
+5.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

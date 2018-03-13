@@ -11,15 +11,17 @@ experiment <- nl_experiment(
   repetitions = 3,
   
   param_values = list(
-    intensity_threshold = seq(0.6,1,0.1),
-    org_budget = seq(0, 100000, 10000),
-    repairRatio=seq(0,1,0.1),
-    extremeWeatherDamage=seq(1,20,5)
+    intensityThreshold = seq(0,0.2,1),
+    orgBudget = seq(0,500,100),
+    repairRatio=seq(0,1,0.2),
+    extremeWeatherDamage=seq(1,20,5),
+    adaptThreshold=seq(1,20,5),
+    maxPrevention=seq(0,100,20)
   ),
-  mapping = c(
-    intensity_threshold="intensity-threshold",
-    org_budget="org-budget"
-  ),
+  # mapping = c(
+  #   intensity_threshold="intensity-threshold",
+  #   org_budget="org-budget"
+  # ),
   # step_measures = measures(
   #  mean_damage = "mean [currentDamage] of serviceArea",
   #  mean_preventionPerTick="mean [prevention] of serviceArea"
@@ -42,13 +44,17 @@ write.csv(results1,"nlexperiment results.csv")
 
 results1<-nl_get_result(results)
 summary(results1)
-View(results1)
+head(results1)
+
+library(purrr)
+map(results1,table)
+results1 %>% select_("intensityThreshold:maxPrevention")
 
 
 library(dplyr)
 library(ggplot2)
 
-count(results1,intensity_threshold)
+distinct(results1,intensityThreshold)
 
 
 ggplot(results1,aes(x=factor(intensity_threshold),y=mean_infra))+
@@ -79,6 +85,7 @@ ggplot(results1,aes(extreme_weather_frequency,mean_infra))+
 
 ggplot(results1,aes(extreme_weather_frequency,mean_infra))+
   geom_point(aes(color=repairRatio, size =1/intensity_threshold)) +scale_color_gradient(low="green", high="red")
+
 
 
 
