@@ -50,7 +50,7 @@ to setup
         if infraQuality = 0 [set infraQuality 1] ; avoid dividing by zero
         set initialQuality infraQuality
         set prevention random maxPrevention
-        set currentDamage 0
+        set currentDamage 0  ; infra damage per each tick
         set damageExp []
   ;        ifelse prevention != 0 [set infraVulnerability  1 / ((infraQuality) * prevention)] [set infraVulnerability (1 / infraQuality)] ; infraVulnerability is inversely related to infraQuality
         update-pcolor
@@ -71,7 +71,7 @@ to go
        renew-budget
        let lastYearExtremeWeather sublist orgRainExp 0 min list 11 length orgRainExp
        let orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastYearExtremeWeather
-       if length orgExtremeWeatherFreq > adaptThreshold  [adapt] ; if in the last year exp three extreme weather, adapt; make a slider; adapt is they have one extreme weather;
+       if length orgExtremeWeatherFreq > adaptThreshold  [adapt] ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
     ]
   ]
 
@@ -98,9 +98,9 @@ end
 
 
 to to-rain  ; rains every step
-  set rainProb random-float 1 ; change real rain to intense weather
+  set rainProb random-float 1 ;
   set rainExp fput rainProb rainExp
-  if rainProb > intensityThreshold [ ;intensityThreshold is slider between 0.6 to 1
+  if rainProb > intensityThreshold [ ;intensityThreshold is slider between 0 and 1 to determine if the weather is extreme
     set extremeWeatherFreq extremeWeatherFreq + 1  ; global var of ew
     ask orgs [; check the current infraQuality after taking damage
     set orgRainExp fput rainProb orgRainExp
@@ -129,7 +129,7 @@ to take-damage
   set infraQuality infraQuality - currentDamage ; what if infraQuality goes below 0
   if infraQuality <= 0 [set infraQuality 1]
   if infraQuality > 100 [set infraQuality 100]
-  set damageExp lput currentDamage damageExp
+  set damageExp lput currentDamage damageExp  ; this one currently not used in other places in the model
 
 end
 
@@ -175,7 +175,7 @@ to adapt ; adapt every 12 ticks, turtle procedure
   let canAdapt true
 
   if any? serviceArea with [prevention < maxPrevention] [
-    while [adaptBudget > 0 and canAdapt] [
+    while [adaptBudget > 0 and canAdapt] [  ; added the condition canAdapt to exit the "while" loop when necessary
 
       ;;; problem is you have two different variables, candidatePatches and candidatePatchesUpdate
       let candidatePatchesUpdate ( serviceArea with [prevention < maxPrevention])
@@ -320,7 +320,7 @@ intensityThreshold
 intensityThreshold
 0
 1
-0.6
+0.4
 0.1
 1
 NIL
@@ -573,7 +573,7 @@ ExtremeWeatherDamage
 ExtremeWeatherDamage
 0
 20
-5.0
+4.0
 1
 1
 NIL
@@ -599,7 +599,7 @@ maxPrevention
 maxPrevention
 0
 100
-48.0
+43.0
 1
 1
 NIL
@@ -614,7 +614,7 @@ adaptThreshold
 adaptThreshold
 0
 10
-5.0
+4.0
 1
 1
 NIL
