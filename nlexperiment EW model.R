@@ -5,18 +5,20 @@ nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation 
 nl_netlogo_path()
 setwd("C:/Users/shown/Documents/GitHub/EW-model")
 
+
+
 experiment <- nl_experiment(
   model_file = "C:/Users/shown/Documents/GitHub/EW-model/EW draft 1.nlogo",
   iterations = 100,
   repetitions = 3,
   
   param_values = list(
-    intensityThreshold = seq(0,0.2,1),
+    intensityThreshold = seq(0,1,0.2),   
     orgBudget = seq(0,500,100),
     repairRatio=seq(0,1,0.2),
-    extremeWeatherDamage=seq(1,20,5),
-    adaptThreshold=seq(1,20,5),
-    maxPrevention=seq(0,100,20)
+    extremeWeatherDamage=seq(0,20,5),
+    adaptThreshold=seq(0,20,5),
+    maxPrevention=seq(0,20,5)
   ),
   # mapping = c(
   #   intensity_threshold="intensity-threshold",
@@ -39,6 +41,7 @@ experiment <- nl_experiment(
 )
 
 results<-nl_run(experiment,parallel = T,print_progress = T)
+results_backup <- results
 write.csv(results1,"nlexperiment results.csv")
 
 
@@ -46,9 +49,11 @@ results1<-nl_get_result(results)
 summary(results1)
 head(results1)
 
+
+
+aggregate(results1,by=list(results1$run_id),FUN=mean)
+
 library(purrr)
-map(results1,table)
-results1 %>% select_("intensityThreshold:maxPrevention")
 
 
 library(dplyr)
@@ -57,13 +62,42 @@ library(ggplot2)
 distinct(results1,intensityThreshold)
 
 
-ggplot(results1,aes(x=factor(intensity_threshold),y=mean_infra))+
- geom_violin() +
-  stat_summary(fun.y=mean, geom = "point")
+ggplot(results1,aes(x=factor(extremeWeatherDamage),y=mean_infra))  +
+  geom_boxplot()  #sig. difference
 
-ggplot(results1,aes(x=factor(org_budget),y=mean_infra))+
+ggplot(results1,aes(x=factor(intensityThreshold),y=mean_infra))  +
+  geom_boxplot() #not too much difference unless intensity threshold is very high > 0.8
+
+ggplot(results1,aes(x=factor(maxPrevention),y=mean_infra))  +
+  geom_boxplot()
+
+
+#examine effect of damage on mean_infra conditioned on prevention
+ggplot(results1,aes(x=factor(extremeWeatherDamage),y=mean_infra))  +
+  geom_boxplot()+
+  facet_wrap(~factor(maxPrevention))  #interesting figure, how to deal with the so many variations
+
+
+ggplot(results1,aes(x=factor(intensityThreshold),y=mean_infra))+
+ geom_violin() +
+  stat_summary(fun.y=mean, geom = "point")  
+
+
+ggplot(results1, aes(x=factor(intensityThreshold),y=mean_infra))+
+  geom_point(aes(color=factor(maxPrevention)))
+
+ggplot(results1,aes(factor(intensityThreshold),mean_infra))+
+  geom_boxplot()
+
+ggplot(results1,aes(x=factor(orgBudget),y=mean_infra))+
   geom_violin()+
   stat_summary(fun.y=median,geom="point")
+
+ggplot(results1,aes(x=factor(orgBudget),y=mean_infra))+
+ geom_boxplot()
+
+ggplot(results1,aes(x=factor(extremeWeatherDamage),y=mean_infra))+
+  geom_boxplot()
 
 
 ggplot(results1,aes(x=factor(repairRatio),y=mean_infra))+
@@ -71,9 +105,8 @@ ggplot(results1,aes(x=factor(repairRatio),y=mean_infra))+
   stat_summary(fun.y = median,geom = "point")
 
 
-ggplot(results1,aes(x=factor(prevention),y=damage))+
-  geom_violin()+
-  stat_summary(fun.y = median,geom = "point")
+ggplot(results1,aes(x=factor(maxPrevention),y=damage))+
+  geom_point()
 
 ggplot(results1,aes(x=prevention,y=damage))+
   geom_line() #why does the line look so thick? 

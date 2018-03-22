@@ -118,16 +118,18 @@ end
 to take-damage
   set currentDamage ExtremeWeatherDamage
 
-  ifelse currentDamage < prevention
-    [set currentDamage 0]
+  ifelse currentDamage <= prevention
     [
-     set currentDamage abs (prevention - currentDamage)
-     set prevention prevention - 1
-     if prevention < 0 [set prevention 0]
+      set currentDamage 0
+    ]
+    [
+      set currentDamage abs (prevention - currentDamage)
     ]
 
+  set prevention prevention - 1
+  if prevention < 0 [set prevention 0]
   set infraQuality infraQuality - currentDamage ; what if infraQuality goes below 0
-  if infraQuality <= 0 [set infraQuality 1]
+  if infraQuality <= 0 [set infraQuality 1]  ; prevention goes down, but it prevents the hits on the infra;
   if infraQuality > 100 [set infraQuality 100]
   set damageExp lput currentDamage damageExp  ; this one currently not used in other places in the model
 
@@ -219,8 +221,6 @@ to recolor
   set vulnerability mean [infraVulnerability] of serviceArea
   set color red - vulnerability * 5
 end
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -477,7 +477,7 @@ orgBudget
 orgBudget
 0
 1000
-1000.0
+500.0
 100
 1
 NIL
@@ -573,7 +573,7 @@ ExtremeWeatherDamage
 ExtremeWeatherDamage
 0
 20
-4.0
+1.0
 1
 1
 NIL
@@ -614,7 +614,7 @@ adaptThreshold
 adaptThreshold
 0
 10
-4.0
+10.0
 1
 1
 NIL

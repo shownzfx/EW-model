@@ -1,0 +1,93 @@
+---
+title: "extreme weather analysis"
+author: "Fengxiu"
+date: "March 22, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r read data and load library}
+knitr::opts_chunk$set(echo = T)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+load("~/GitHub/EW-model/nlexperiment data.RData")
+
+
+```
+
+## Including Plots
+
+```{r damage,maxPrevention and intensityThreshold, include=T}
+
+
+ggplot(results1,aes(x=factor(extremeWeatherDamage),y=mean_infra))  +
+  geom_boxplot()  #sig. difference
+
+ggplot(results1,aes(x=factor(maxPrevention),y=mean_infra))  +
+  geom_boxplot() #sensitive to maxPrevention when maxPrevention is bigger than 5
+
+
+ggplot(results1,aes(x=factor(intensityThreshold),y=mean_infra))  +
+  geom_boxplot() #not too much difference unless intensity threshold is very high > 0.8
+
+```
+```{r examine effect of damage on mean_infra conditioned on prevention,include=T}
+
+ggplot(results1,aes(x=factor(extremeWeatherDamage),y=mean_infra))  +
+  geom_boxplot()+
+  facet_wrap(~factor(maxPrevention))  #interesting figure, how to deal with the so many variations
+
+ggplot(results1,aes(x=factor(repairRatio),y=mean_infra))  +
+  geom_boxplot()  #not sentitive to repairRatio; might because the maxBudget is only 500, very small
+
+
+ggplot(results1,aes(x=factor(orgBudget),y=mean_infra))+
+ geom_boxplot() +
+  facet_wrap(~factor(intensityThreshold)) #still not sensitive to intensityThreshold unless at the extremes
+
+ggplot(results1,aes(x=factor(intensityThreshold),y=mean_infra))+
+  geom_boxplot() #not very sentitive to threshold
+
+
+```
+
+```{r frequency, extremeWeatherDamage and prevention, include=T}
+ggplot(results1,aes(extreme_weather_frequency,mean_infra))+
+  geom_point(aes(color=orgBudget)) +
+  scale_color_gradient(low="red", high="green") 
+# not very distinct pattern on budget, budget is low
+
+
+ggplot(results1,aes(extreme_weather_frequency,mean_infra))+
+  geom_point(aes(color=prevention)) + scale_color_gradient(low="red", high="green") 
+#pattern on prevention becomes more clearer
+
+ggplot(results1,aes(extreme_weather_frequency,mean_infra))+
+  geom_point(aes(color=extremeWeatherDamage)) + 
+  scale_color_gradient(low="red", high="green") 
+#patter on damage also clear
+
+```
+
+```{r investigate adaptThreshold, prevention and infra quality,include=T}
+ggplot(results1,aes(x=factor(adaptThreshold),y=prevention))+
+  geom_boxplot()#prevention is not sensitive to adaptThreshold when threshold is smaller than 15
+
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+  geom_boxplot() #adaptThreshold does not matter to infra quality, why?
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+  geom_boxplot()+
+  facet_grid(~extremeWeatherDamage) #when accounting for extremeweatherDamage, it becomes sensitive
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
