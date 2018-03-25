@@ -75,7 +75,7 @@ to go
        renew-budget
        let lastTwoYearExtremeWeather sublist orgRainExp 0 min list 23 length orgRainExp
        set orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastTwoYearExtremeWeather
-       print length (orgExtremeWeatherFreq)
+      ; print length (orgExtremeWeatherFreq)
 
        if length orgExtremeWeatherFreq >= adaptThreshold  ;
         [
