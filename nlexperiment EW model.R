@@ -241,18 +241,20 @@ ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
 
 
 #-------------adaptation----------
+library(ggplot2)
+library(dplyr)
 ggplot(results2,aes(x=factor(adaptThreshold),y=prevention))+
   geom_boxplot()#prevention is not sensitive to adaptThreshold when threshold is smaller than 15
 results2 %>% 
-  filter(orgBudget==1000 & intensityThreshold ==1) %>% 
+  filter(orgBudget==1000 & intensityThreshold ==0.8) %>% 
   group_by(adaptThreshold) %>% summarise(meanPrevention= mean(prevention),meanInfra=mean(mean_infra))
 
 
 
-ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+ggplot(results2,aes(x=factor(adaptThreshold),y=mean_infra))+
   geom_boxplot() #adaptThreshold does not matter to infra quality, why?
 
-ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+ggplot(results2,aes(x=factor(adaptThreshold),y=mean_infra))+
   geom_boxplot()+
   facet_grid(~extremeWeatherDamage) #when accounting for extremeweatherDamage, it becomes sensitive
 
