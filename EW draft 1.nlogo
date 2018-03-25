@@ -16,11 +16,12 @@ orgs-own [; doc intensity of extreme weather
   orgRepairBudget; budget * repairRato
   ;repairRatio ratio of repair (maintain) to adaptation (a slider on the interface)
   vulnerability ; average of mean vulnerablity of its service area
+  adaptTime
 ]
 
 patches-own [
   infraQuality  ; infra conditions on the serviceArea; updated each tick
-  initialQuality  ; initial conditions of the infra; for fix actions, the infraQuality restore to initialQuality with some randomness
+  initialInfraQuality  ; initial conditions of the infra; for fix actions, the infraQuality restore to initialInfraQuality with some randomness
   owner ; identity which transit the patches belong to
   repairCost
   currentDamage ; damage for each tick
@@ -42,13 +43,15 @@ to setup
     set initialBudget budget ; initial budget for each tick
     set vulnerability 0
     set orgRainExp []
+    set adaptTime 0
+
 
 
       ask patches in-radius 5 [
         set owner 1
         set infraQuality random 100
         if infraQuality = 0 [set infraQuality 1] ; avoid dividing by zero
-        set initialQuality infraQuality
+        set initialInfraQuality infraQuality
         set prevention random maxPrevention
         set currentDamage 0  ; infra damage per each tick
         set damageExp []
@@ -69,9 +72,14 @@ to go
     ask orgs
     [
        renew-budget
-       let lastYearExtremeWeather sublist orgRainExp 0 min list 11 length orgRainExp
-       let orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastYearExtremeWeather
-       if length orgExtremeWeatherFreq > adaptThreshold  [adapt] ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
+       update-repairRatio
+       let lastTwoYearExtremeWeather sublist orgRainExp 0 min list 23 length orgRainExp
+       let orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastTwoYearExtremeWeather
+       if length orgExtremeWeatherFreq > adaptThreshold
+        [
+          set adaptTime adaptTime + 1
+          adapt
+      ] ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
     ]
   ]
 
@@ -92,10 +100,21 @@ to update-pcolor
 end
 
 to renew-budget
- set budget orgBudget  ;
- set initialBudget budget
+
+    set budget orgBudget  ;
+    set initialBudget budget
+
 end
 
+to update-repairRatio
+  let currentInfraQuality mean [infraQuality] of serviceArea
+  let originalInfraQualty mean [initialInfraQuality] of serviceArea
+  if adaptRepairRatio and currentInfraQuality >= 0.5 * originalInfraQualty [
+  set repairRatio repairRatio - 0.01
+  if repairRatio < 0.1 [set repairRatio 0.1]
+  ]
+
+end
 
 to to-rain  ; rains every step
   set rainProb random-float 1 ;
@@ -119,15 +138,12 @@ to take-damage
   set currentDamage ExtremeWeatherDamage
 
   ifelse currentDamage <= prevention
-    [
-      set currentDamage 0
-    ]
-    [
-      set currentDamage abs (prevention - currentDamage)
-    ]
+    [set currentDamage 0]
+    [set currentDamage abs (prevention - currentDamage)]
 
   set prevention prevention - 1
   if prevention < 0 [set prevention 0]
+
   set infraQuality infraQuality - currentDamage ; what if infraQuality goes below 0
   if infraQuality <= 0 [set infraQuality 1]  ; prevention goes down, but it prevents the hits on the infra;
   if infraQuality > 100 [set infraQuality 100]
@@ -138,8 +154,8 @@ end
 
 
 to calculate-repairCost
-  ask serviceArea with [infraQuality < initialQuality ][
-      let decline initialQuality - infraQuality  ; how does the infra-qualty reduce compared to the initial state
+  ask serviceArea with [infraQuality < initialInfraQuality ][
+      let decline initialInfraQuality - infraQuality  ; how does the infra-qualty reduce compared to the initial state
       set repairCost decline * 1; each patch repair cost of 10 for each quality decline; 1 is the unit repair cost, put on the same scale as daptation cost per patch
     ]
 
@@ -155,22 +171,22 @@ to repair
         set repairBudget fix-infra repairBudget; repairCost specific to patches, repair budget specific to orgs
      ]
   ]
-  let moneySpent originalRepairBudget - repairBudget
-  set budget budget - moneySpent
+  let repairMoneySpent originalRepairBudget - repairBudget
+  set budget budget - repairMoneySpent
 end
 
-to-report fix-infra [money]
-  if repairCost < money [
-    set infraQuality initialQuality
-    set money money - repairCost
+to-report fix-infra [repairMoney]
+  if repairCost < repairMoney [
+    set infraQuality initialInfraQuality
+    set repairMoney repairMoney - repairCost
   ]
-  report money
+  report repairMoney
 end
 
 
 to adapt ; adapt every 12 ticks, turtle procedure
 
-  let adaptCost 1 ; to add each capital investment to enhance infra resilience, the cost is 50
+  let adaptCost adaptCostPerUnit ; to add each capital investment to enhance infra resilience, the cost is 50
   let adaptBudget (1 - repairRatio) * initialBudget
   let initialAdaptBudget adaptBudget
 ;  let candidatePatches ( serviceArea with [prevention < maxPrevention])  ; only add prevention to serviceArea with less than maxPrevention preventions on them already
@@ -209,7 +225,10 @@ end
 
 
 to infra-decay
-  if random 100 > 99 [set infraQuality infraQuality - 1]
+  if random 100 > 99 [
+    set infraQuality infraQuality - 1
+    set prevention prevention - 1
+  ]
 end
 
 
@@ -320,7 +339,7 @@ intensityThreshold
 intensityThreshold
 0
 1
-0.4
+0.8
 0.1
 1
 NIL
@@ -331,7 +350,7 @@ PLOT
 190
 1004
 340
-mean infra quality
+mean infra quality/ adaptTime
 Tick
 infraQuality
 0.0
@@ -342,7 +361,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot mean [infraQuality] of serviceArea\n"
+"default" 1.0 0 -2674135 true "" "plot mean [infraQuality] of serviceArea\n"
 
 MONITOR
 793
@@ -393,7 +412,7 @@ PLOT
 183
 782
 333
-Prevention Num
+Mean Prevention/Damage
 NIL
 NIL
 0.0
@@ -404,7 +423,8 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot mean [prevention] of serviceArea"
+"default" 1.0 0 -14439633 true "" "plot mean [prevention] of serviceArea"
+"pen-1" 1.0 0 -8053223 true "" "plot mean [currentDamage] of serviceArea"
 
 MONITOR
 1041
@@ -439,24 +459,6 @@ vul
 1
 11
 
-PLOT
-807
-350
-1007
-500
-mean damage
-NIL
-NIL
-0.0
-10.0
-0.0
-5.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -8053223 true "" "plot mean [currentDamage] of serviceArea"
-
 MONITOR
 662
 356
@@ -477,7 +479,7 @@ orgBudget
 orgBudget
 0
 1000
-500.0
+600.0
 100
 1
 NIL
@@ -514,7 +516,7 @@ repairRatio
 repairRatio
 0
 1
-0.26
+0.71
 0.01
 1
 NIL
@@ -573,7 +575,7 @@ ExtremeWeatherDamage
 ExtremeWeatherDamage
 0
 20
-1.0
+6.0
 1
 1
 NIL
@@ -598,8 +600,8 @@ SLIDER
 maxPrevention
 maxPrevention
 0
-100
-43.0
+40
+11.0
 1
 1
 NIL
@@ -615,6 +617,43 @@ adaptThreshold
 0
 10
 10.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+349
+380
+429
+425
+adapt Times
+[adaptTime] of orgs
+0
+1
+11
+
+SWITCH
+13
+448
+165
+481
+adaptRepairRatio
+adaptRepairRatio
+1
+1
+-1000
+
+SLIDER
+11
+487
+183
+520
+adaptCostPerUnit
+adaptCostPerUnit
+0
+10
+2.0
 1
 1
 NIL
