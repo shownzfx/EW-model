@@ -1,6 +1,5 @@
 #EW model experiments
 
-
 # Windows
 library(nlexperiment)
 nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
@@ -15,8 +14,10 @@ nl_netlogo_path()
 setwd("/home/fzhang59/dev/EW-model")
 module_file_path="/home/fzhang59/dev/EW-model/EW draft 1.nlogo"
 
+
+
 experiment <- nl_experiment(
-  model_file = model_file_path,
+  model_file = module_file_path,
   iterations = 100,
   repetitions = 3,
   
@@ -159,17 +160,25 @@ experiment2 <- nl_experiment(
     mean_infra_perTick="mean [infraQuality] of serviceArea",
     mean_damage_perTick = "mean [currentDamage] of serviceArea",
     mean_preventionPerTick="mean [prevention] of serviceArea"
-  )
-  
-  # run_measures=measures(
-  #   mean_infra="mean [infraQuality] of serviceArea",
-  #   org_repair_budget="[orgRepairBudget] of orgs",
-  #   org_vulnerability = "mean [infraVulnerability] of serviceArea",
-  #   repair_cost="sum [repairCost] of serviceArea",
-  #   extreme_weather_frequency="extremeWeatherFreq",
-  #   prevention="mean [prevention] of serviceArea", 
-  #   damage="mean [currentDamage] of serviceArea"
-  # ),
+  ),
+
+  run_measures=measures(
+    mean_infra="mean [infraQuality] of serviceArea",
+    org_repair_budget="[orgRepairBudget] of orgs",
+    org_vulnerability = "mean [infraVulnerability] of serviceArea",
+    repair_cost="sum [repairCost] of serviceArea",
+    extreme_weather_frequency="extremeWeatherFreq",
+    prevention="mean [prevention] of serviceArea",
+    damage="mean [currentDamage] of serviceArea"
+  ),
 )
 
 results2_lessCombinations<-nl_run(experiment2,print_progress = T,parallel = T)
+results2<-nl_get_result(results2_lessCombinations)
+dim(results2)
+summary(results2)
+
+results2_step<-nl_get_step_result(results2_lessCombinations)
+dim(results2_step)
+
+
