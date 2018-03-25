@@ -17,6 +17,7 @@ orgs-own [; doc intensity of extreme weather
   ;repairRatio ratio of repair (maintain) to adaptation (a slider on the interface)
   vulnerability ; average of mean vulnerablity of its service area
   adaptTime
+  orgExtremeWeatherFreq
 ]
 
 patches-own [
@@ -44,7 +45,7 @@ to setup
     set vulnerability 0
     set orgRainExp []
     set adaptTime 0
-
+;    set orgExtremeWeatherFreq []
 
 
       ask patches in-radius 5 [
@@ -72,16 +73,21 @@ to go
     ask orgs
     [
        renew-budget
-       update-repairRatio
        let lastTwoYearExtremeWeather sublist orgRainExp 0 min list 23 length orgRainExp
-       let orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastTwoYearExtremeWeather
-       if length orgExtremeWeatherFreq > adaptThreshold
+       set orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastTwoYearExtremeWeather
+       print length (orgExtremeWeatherFreq)
+
+       if length orgExtremeWeatherFreq >= adaptThreshold  ;
         [
           set adaptTime adaptTime + 1
+          update-repairRatio
           adapt
-      ] ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
-    ]
-  ]
+        ] ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
+      set orgExtremeWeatherFreq []
+      ]
+   ]
+
+
 
 
 
@@ -100,7 +106,6 @@ to update-pcolor
 end
 
 to renew-budget
-
     set budget orgBudget  ;
     set initialBudget budget
 
@@ -111,7 +116,7 @@ to update-repairRatio
   let originalInfraQualty mean [initialInfraQuality] of serviceArea
   if adaptRepairRatio and currentInfraQuality >= 0.5 * originalInfraQualty [
   set repairRatio repairRatio - 0.01
-  if repairRatio < 0.1 [set repairRatio 0.1]
+  if repairRatio < 0.5 [set repairRatio 0.5]
   ]
 
 end
@@ -119,10 +124,12 @@ end
 to to-rain  ; rains every step
   set rainProb random-float 1 ;
   set rainExp fput rainProb rainExp
+  ask orgs [
+  set orgRainExp fput rainProb orgRainExp
+  ]
   if rainProb > intensityThreshold [ ;intensityThreshold is slider between 0 and 1 to determine if the weather is extreme
     set extremeWeatherFreq extremeWeatherFreq + 1  ; global var of ew
     ask orgs [; check the current infraQuality after taking damage
-    set orgRainExp fput rainProb orgRainExp
     ask serviceArea [take-damage]
     calculate-repairCost ; scan infra, calculate costs and decide whether to repair or add prevention
     repair ; do repair or adapt (adding preventions）
@@ -516,7 +523,7 @@ repairRatio
 repairRatio
 0
 1
-0.71
+0.5499999999999997
 0.01
 1
 NIL
@@ -616,7 +623,7 @@ adaptThreshold
 adaptThreshold
 0
 10
-10.0
+5.0
 1
 1
 NIL
@@ -628,7 +635,7 @@ MONITOR
 429
 425
 adapt Times
-[adaptTime] of orgs
+sum [adaptTime] of orgs
 0
 1
 11
@@ -653,7 +660,7 @@ adaptCostPerUnit
 adaptCostPerUnit
 0
 10
-2.0
+1.0
 1
 1
 NIL

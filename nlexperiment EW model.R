@@ -134,7 +134,7 @@ ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
 
 
 # 
-# ggplot(results1,aes(extreme_weather_frequency,mean_infra))+
+# ggplot(results2,aes(extreme_weather_frequency,mean_infra))+
 #   geom_point(aes(color=repairRatio, size =1/intensityThreshold)) +scale_color_gradient(low="green", high="red")
 # 
 # 
@@ -180,5 +180,80 @@ summary(results2)
 
 results2_step<-nl_get_step_result(results2_lessCombinations)
 dim(results2_step)
+
+
+#examine effect of damage on mean_infra conditioned on prevention
+ggplot(results2,aes(x=factor(extremeWeatherDamage),y=mean_infra))  +
+  geom_boxplot()+
+  facet_wrap(~factor(maxPrevention))  #interesting figure, how to deal with the so many variations
+
+ggplot(results2,aes(x=factor(repairRatio),y=mean_infra))  +
+  geom_boxplot()  #not sentitive to repairRatio; might because the maxBudget is only 500, very small
+
+results2 %>% filter(orgBudget==2000) %>% 
+  ggplot(aes(x=factor(repairRatio),y=mean_infra))  +
+  geom_boxplot()
+
+results2 %>% filter(orgBudget==2000) %>% 
+  group_by(repairRatio) %>% summarise(meanInfra=mean(mean_infra))
+  
+
+ggplot(results2,aes(x=factor(orgBudget),y=mean_infra))  +
+  geom_boxplot() 
+
+
+ggplot(results2,aes(x=factor(orgBudget),y=mean_infra))+
+  geom_boxplot() +
+  facet_wrap(~factor(intensityThreshold)) #still not sensitive to intensityThreshold unless at the
+
+ggplot(results2,aes(x=factor(intensityThreshold),y=mean_infra))+
+  geom_boxplot() #not very sentitive to threshold
+
+
+ggplot(results2,aes(extreme_weather_frequency,mean_infra))+
+  geom_jitter(aes(color=orgBudget),alpha=0.5,size=1) +
+  scale_color_gradient(low="red", high="green") 
+# not very distinct pattern on budget, budget is low
+
+
+ggplot(results2,aes(extreme_weather_frequency,mean_infra))+
+  geom_jitter(aes(color=prevention),alpha=0.5,size=1) + scale_color_gradient(low="red", high="green") 
+#pattern on prevention becomes more clearer
+
+ggplot(results2,aes(extreme_weather_frequency,mean_infra))+
+  geom_point(aes(color=extremeWeatherDamage)) + 
+  scale_color_gradient(low="green", high="red") 
+#patter on damage also clear
+
+#------------------adaptation------------
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=prevention))+
+  geom_boxplot()#prevention is not sensitive to adaptThreshold when threshold is smaller than 15
+
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+  geom_boxplot() #adaptThreshold does not matter to infra quality, why?
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+  geom_boxplot()+
+  facet_grid(~extremeWeatherDamage) #when accounting for extremeweatherDamage, it becomes sensitive
+
+
+
+#-------------adaptation----------
+ggplot(results2,aes(x=factor(adaptThreshold),y=prevention))+
+  geom_boxplot()#prevention is not sensitive to adaptThreshold when threshold is smaller than 15
+results2 %>% 
+  filter(orgBudget==1000 & intensityThreshold ==1) %>% 
+  group_by(adaptThreshold) %>% summarise(meanPrevention= mean(prevention),meanInfra=mean(mean_infra))
+
+
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+  geom_boxplot() #adaptThreshold does not matter to infra quality, why?
+
+ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+  geom_boxplot()+
+  facet_grid(~extremeWeatherDamage) #when accounting for extremeweatherDamage, it becomes sensitive
 
 
