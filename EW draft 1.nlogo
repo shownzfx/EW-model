@@ -134,7 +134,7 @@ to adapt-by-EWdamage
     adapt
   ]
  set adapt? false
- print "adapt-by-damage"
+
 end
 
 to not-adapt ; is there better way to model "do nothing maintaining the status quo"
@@ -154,10 +154,10 @@ to renew-budget
 
 end
 
-to update-repairRatio
+to update-repairRatio ; this model applies to when orgs adapt, they also increase their adapti
   let currentInfraQuality mean [infraQuality] of serviceArea
   let originalInfraQualty mean [initialInfraQuality] of serviceArea
-  if adaptRepairRatio and currentInfraQuality >= 0.5 * originalInfraQualty [
+  if changeRepairRatio? = true and currentInfraQuality >= 0.5 * originalInfraQualty [
   set repairRatio repairRatio - 0.01
   if repairRatio < 0.5 [set repairRatio 0.5]
   ]
@@ -205,8 +205,8 @@ end
 to record-damage
   let seriveAreaDamage sum [currentDamage] of serviceArea
   set damageExpMemory lput seriveAreaDamage damageExpMemory
-  if length damageExpMemory > maxMemoryLength
-  [set damageExpMemory remove-item 0 damageExpMemory]  ; forget the damage from the oldest event
+  if length damageExpMemory > maxMemoryLength ; maxMemoryLength is a slider
+  [set damageExpMemory remove-item 0 damageExpMemory]  ; forget the damage from the oldest event;
 
 end
 
@@ -575,7 +575,7 @@ repairRatio
 repairRatio
 0
 1
-0.5499999999999997
+0.5099999999999997
 0.01
 1
 NIL
@@ -695,10 +695,10 @@ sum [adaptTime] of orgs
 SWITCH
 13
 448
-165
+179
 481
-adaptRepairRatio
-adaptRepairRatio
+changeRepairRatio?
+changeRepairRatio?
 1
 1
 -1000
