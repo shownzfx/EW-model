@@ -77,7 +77,7 @@ to go
     ask orgs
     [
        renew-budget
-       adapt-strategy
+       adapt-strategy ; I used a chooser to model the conditions under which orgs adapt
     ]
   ]
 
