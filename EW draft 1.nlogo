@@ -137,7 +137,7 @@ to adapt-by-EWdamage
  print "adapt-by-damage"
 end
 
-to not-adapt
+to not-adapt ; is there better way to model "do nothing maintaining the status quo"
  set adapt? false
  set repairRatio repairRatio
 
