@@ -11,14 +11,15 @@ globals [
 
 orgs-own [; doc intensity of extreme weather
   budget ; total budget for maintainance and adaptation (preventive measures)
-  orgRainExp
+  orgWeatherExp
   initialBudget ; starting budget for each tick
   orgRepairBudget; budget * repairRato
   ;repairRatio ratio of repair (maintain) to adaptation (a slider on the interface)
-  vulnerability ; average of mean vulnerablity of its service area
-  adapt?  ; does it adapt or not
+  orgVulnerability ; average of mean vulnerablity of its service area
+  whetherAdapt  ; does it adapt or not
   adaptTime ; times of adaptation
   orgExtremeWeatherFreq
+  serviceAreaDamage ; total damage on service area patches
   damageExpMemory; remember damage
 ]
 
@@ -35,7 +36,7 @@ patches-own [
 
 to setup
   ca
-  random-seed 47822
+;  random-seed 47822
   set-default-shape orgs "house"
   set extremeWeatherFreq 0
   set rainExp []
@@ -44,9 +45,8 @@ to setup
     set color red
     set budget orgBudget ;orgBudget is slider
     set initialBudget budget ; initial budget for each tick
-    set vulnerability 0
-    set orgRainExp []
-    set adapt? false
+    set orgWeatherExp []
+    set whetherAdapt false
     set adaptTime 0
     set damageExpMemory []
 ;    set orgExtremeWeatherFreq []
@@ -59,20 +59,21 @@ to setup
         set initialInfraQuality infraQuality
         set prevention random maxPrevention
         set currentDamage 0  ; infra damage per each tick
-
-  ;        ifelse prevention != 0 [set infraVulnerability  1 / ((infraQuality) * prevention)] [set infraVulnerability (1 / infraQuality)] ; infraVulnerability is inversely related to infraQuality
         update-pcolor
     ]
   ;  set service-area patches with [owner = 1]
   ]
   set serviceArea patches with [owner = 1]
-  ask orgs [recolor]
+  ask orgs [
+    update-vulnerability
+    recolor
+ ]
   reset-ticks
 end
 
 to go
   to-rain ; rain every tick
-  if ticks > 0 and ticks mod 12 = 0 ; renew budget every year (12 ticks)
+  if ticks > 0 and ticks mod numMonths = 0 ; renew budget every numMonth (slider) with an increment of 12
   [
     ask orgs
     [
@@ -86,6 +87,11 @@ to go
     update-pcolor
   ]
 
+  ask orgs [
+    update-vulnerability
+    recolor
+  ]
+
   tick
 end
 
@@ -95,8 +101,12 @@ to adapt-strategy
     adapt-by-EWfreq
   ]
 
-  if choose-strategy = "rememberDamage" [
-    adapt-by-EWdamage
+  if choose-strategy = "rememberCumDamage" [
+    adapt-by-CumDamage ; adapt depending on cumulative damage over the past year
+  ]
+
+  if choose-strategy ="rememberSevereDamage"[
+    adapt-by-severeDamage ; adapt depending on
   ]
 
   if choose-strategy = "doNothing" [
@@ -106,39 +116,61 @@ to adapt-strategy
 end
 
 to adapt-by-EWfreq
-  let lastTwoYearExtremeWeather sublist orgRainExp 0 min list 23 length orgRainExp
-  set orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] lastTwoYearExtremeWeather
-  print "adapt-by-ewfreq"
+  let preWeatherExp sublist orgWeatherExp 0 min list interval length orgWeatherExp ; interval is a slider to show how many months do orgs check strategy
+  set orgExtremeWeatherFreq filter [ i -> i > intensityThreshold] preWeatherExp
 
-  if length orgExtremeWeatherFreq >= adaptThreshold  ;
+  if length orgExtremeWeatherFreq >= adaptThreshold  ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
    [
-    set adapt? true
+    set whetherAdapt true
     set adaptTime adaptTime + 1
-    update-repairRatio
     adapt
-   ] ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
-   set adapt? false  ; after adaptation once, set adapt back to false
-   set orgExtremeWeatherFreq []
+    update-repairRatio ; they decide they want to change everything this year (before the adapt); or the
+   ] ;
+   set whetherAdapt false  ; after adaptation once, set adapt back to false
+   set orgExtremeWeatherFreq [] ; restart the counter very
 end
 
 
-to adapt-by-EWdamage
-;  let severeDamage sum [initialInfraQuality * damageRatio] of serviceArea; on average, each infra declines by (damageRatio)
+to adapt-by-CumDamage
+  print damageExpMemory
+  let preWeatherDamage sublist damageExpMemory 0 min (list interval length damageExpMemory)
+  let preCumDamage sum preWeatherDamage  ; how much damage occurred during the period (defined by the slider "interval")
+  ;print preCumDamage
+
+  let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea
+  print preCumDamage / initialInfraQuality
+  if preCumDamage / initialInfraQuality > cumDamageRatioThreshold [
+    set whetherAdapt true  ; total the total amount
+    set adaptTime adaptTime + 1
+    adapt
+    update-repairRatio  ; updateRatio for next year
+  ]
+  set whetherAdapt false
+end
+
+
+
+
+to adapt-by-severeDamage
+
+  let preWeatherDamage sublist damageExpMemory 0 min (list interval length damageExpMemory)
+
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea  ; initial infra quality summed over serviceArea
-  let DamagedRatio map [i -> i / initialTotalInfraQuality] damageExpMemory ; calculate aggregated damaged ratio
+  let DamagedRatio map [i -> i / initialTotalInfraQuality] preWeatherDamage ; calculate aggregated damaged ratio
   let SevereDamaged filter [ i -> i > damageRatioThreshold] DamagedRatio ; how many damage are above the threshold, filter the list
-  if length SevereDamaged > 1 [
-    set adapt? true
+  if length SevereDamaged > 1 [ ; change to a slider (remember just one); two or three; or maybe the other thing;
+    set whetherAdapt true  ; total the total amount
     set adaptTime adaptTime + 1
     update-repairRatio
     adapt
   ]
- set adapt? false
+ set whetherAdapt false
 
 end
 
+
 to not-adapt ; is there better way to model "do nothing maintaining the status quo"
- set adapt? false
+ set whetherAdapt false
  set repairRatio repairRatio
 
 end
@@ -168,18 +200,21 @@ to to-rain  ; rains every step
   set rainProb random-float 1 ;
   set rainExp fput rainProb rainExp
   ask orgs [
-  set orgRainExp fput rainProb orgRainExp
+  set orgWeatherExp fput rainProb orgWeatherExp
   ]
-  if rainProb > intensityThreshold [ ;intensityThreshold is slider between 0 and 1 to determine if the weather is extreme
+  ifelse rainProb > intensityThreshold [ ;intensityThreshold is slider between 0 and 1 to determine if the weather is extreme
     set extremeWeatherFreq extremeWeatherFreq + 1  ; global var of ew
     ask orgs [; check the current infraQuality after taking damage
     ask serviceArea [take-damage]
-    record-damage
     calculate-repairCost ; scan infra, calculate costs and decide whether to repair or add prevention
     repair ; do repair or adapt (adding preventions）
-    recolor
-    ]
+    recolor]
+  ] [
+    ask orgs [ask serviceArea [set currentDamage 0]]
   ]
+
+  ask orgs [record-damage]
+
 
 end
 
@@ -204,10 +239,17 @@ end
 
 to record-damage
   let seriveAreaDamage sum [currentDamage] of serviceArea
-  set damageExpMemory lput seriveAreaDamage damageExpMemory
-  if length damageExpMemory > maxMemoryLength ; maxMemoryLength is a slider
-  [set damageExpMemory remove-item 0 damageExpMemory]  ; forget the damage from the oldest event;
+  set damageExpMemory fput seriveAreaDamage damageExpMemory
 
+end
+
+
+
+to record-damage-memory ; currently not use in the model
+ ask orgs [
+    if length damageExpMemory > maxMemoryLength ; maxMemoryLength is a slider
+    [set damageExpMemory remove-item 0 damageExpMemory]  ; forget the damage from the oldest event;
+ ]
 end
 
 
@@ -291,13 +333,18 @@ to infra-decay
 end
 
 
-to recolor
+
+to update-vulnerability
   ask serviceArea [
     if infraQuality = 0 [set infraQuality 1]
-     ifelse prevention != 0 [set infraVulnerability  1 / ((infraQuality) * prevention)] [set infraVulnerability (1 / infraQuality)]
+    set infraVulnerability 1 / (infraQuality + prevention)
   ]
-  set vulnerability mean [infraVulnerability] of serviceArea
-  set color red - vulnerability * 5
+  set orgVulnerability mean [infraVulnerability] of serviceArea
+end
+
+to recolor
+  ; set color scale-color red orgVulnerability 0  10
+  set color red
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -398,7 +445,7 @@ intensityThreshold
 intensityThreshold
 0
 1
-0.7
+0.8
 0.1
 1
 NIL
@@ -409,7 +456,7 @@ PLOT
 190
 1004
 340
-mean infra quality/ adaptTime
+mean infra quality
 Tick
 infraQuality
 0.0
@@ -512,8 +559,8 @@ MONITOR
 356
 653
 401
-vul
-[vulnerability] of orgs
+org vul
+[Orgvulnerability] of orgs
 2
 1
 11
@@ -546,9 +593,9 @@ HORIZONTAL
 
 MONITOR
 1020
-291
+240
 1154
-336
+285
 mean current damage
 mean [currentDamage] of serviceArea
 2
@@ -557,9 +604,9 @@ mean [currentDamage] of serviceArea
 
 MONITOR
 1107
-339
+288
 1186
-384
+333
 min damage
 min [currentDamage] of serviceArea
 2
@@ -583,9 +630,9 @@ HORIZONTAL
 
 MONITOR
 1020
-339
+288
 1103
-384
+333
 max damage
 max [currentDamage] of serviceArea
 2
@@ -682,10 +729,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-372
-459
-452
-504
+790
+380
+870
+425
 adapt Times
 sum [adaptTime] of orgs
 0
@@ -719,10 +766,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-199
-423
-371
-456
+210
+345
+382
+378
 maxMemoryLength
 maxMemoryLength
 0
@@ -734,20 +781,20 @@ NIL
 HORIZONTAL
 
 CHOOSER
-200
-467
-363
-512
+395
+460
+582
+505
 choose-strategy
 choose-strategy
-"rememberFrequency" "rememberDamage" "doNothing"
+"rememberFrequency" "rememberCumDamage" "rememberSevereDamage" "doNothing"
 1
 
 SLIDER
-195
-519
-376
-552
+210
+420
+391
+453
 damageRatioThreshold
 damageRatioThreshold
 0
@@ -759,15 +806,78 @@ NIL
 HORIZONTAL
 
 MONITOR
-376
-514
-499
-559
+785
+430
+908
+475
 DamageRatio
 sum [currentDamage] of serviceArea / sum [initialInfraQuality] of serviceArea
 2
 1
 11
+
+SLIDER
+210
+455
+382
+488
+interval
+interval
+0
+100
+11.0
+11
+1
+NIL
+HORIZONTAL
+
+SLIDER
+210
+495
+382
+528
+numMonths
+numMonths
+0
+100
+24.0
+12
+1
+NIL
+HORIZONTAL
+
+SLIDER
+210
+385
+412
+416
+cumDamageRatioThreshold
+cumDamageRatioThreshold
+0
+1
+0.2
+0.01
+1
+NIL
+HORIZONTAL
+
+PLOT
+930
+350
+1130
+500
+Org vulnerablity 
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot sum [orgVulnerability] of orgs"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1147,5 +1257,5 @@ true
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 @#$#@#$#@
-0
+1
 @#$#@#$#@
