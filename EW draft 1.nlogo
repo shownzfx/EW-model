@@ -150,7 +150,6 @@ end
 
 
 
-
 to adapt-by-severeDamage
 
   let preWeatherDamage sublist damageExpMemory 0 min (list interval length damageExpMemory)
