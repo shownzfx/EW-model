@@ -140,7 +140,7 @@ ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
 # 
 
 
-#experiment 2 with less 
+#experiment 2 with less combinations
 experiment2 <- nl_experiment(
   model_file = module_file_path,
   iterations = 100,
@@ -148,12 +148,20 @@ experiment2 <- nl_experiment(
   
   param_values = list(
     intensityThreshold = c(0,0.5,0.8,1),   
-    orgBudget = seq(0,2000,1000),
+    orgBudget = seq(0,3000,1000),
     repairRatio=c(0.5,0.8,1),
     extremeWeatherDamage=c(0,5,10),
     adaptThreshold=seq(0,10,5),
     maxPrevention=seq(0,10,5),
-    adaptCostPerUnit=c(1,2)
+    adaptCostPerUnit=c(1,2),
+    cumDamageRatioThreshold=c(0,5,8,10),
+    damageRatioThreshold=c(0,0.1,0.25,0.5),
+    numMonths=c(0,12,24,36),
+    interval=c(0,11,23,35)
+    # choose-strategy=c("rememberFrequency", "rememberCumDamage")
+    # choose-strategy=c("rememberFrequency","rememberCumDamage",
+    #                   "rememberSevereDamage","doNothing")
+    # 
   ),
   
   step_measures = measures(
@@ -227,14 +235,14 @@ ggplot(results2,aes(extreme_weather_frequency,mean_infra))+
 
 #------------------adaptation------------
 
-ggplot(results1,aes(x=factor(adaptThreshold),y=prevention))+
+ggplot(results2,aes(x=factor(adaptThreshold),y=prevention))+
   geom_boxplot()#prevention is not sensitive to adaptThreshold when threshold is smaller than 15
 
 
-ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+ggplot(results2,aes(x=factor(adaptThreshold),y=mean_infra))+
   geom_boxplot() #adaptThreshold does not matter to infra quality, why?
 
-ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
+ggplot(results2,aes(x=factor(adaptThreshold),y=mean_infra))+
   geom_boxplot()+
   facet_grid(~extremeWeatherDamage) #when accounting for extremeweatherDamage, it becomes sensitive
 
@@ -246,7 +254,7 @@ library(dplyr)
 ggplot(results2,aes(x=factor(adaptThreshold),y=prevention))+
   geom_boxplot()#prevention is not sensitive to adaptThreshold when threshold is smaller than 15
 results2 %>% 
-  filter(orgBudget==1000 & intensityThreshold ==0.8) %>% 
+  filter(orgBudget==2000 & intensityThreshold >=0.8) %>% 
   group_by(adaptThreshold) %>% summarise(meanPrevention= mean(prevention),meanInfra=mean(mean_infra))
 
 
@@ -258,4 +266,5 @@ ggplot(results2,aes(x=factor(adaptThreshold),y=mean_infra))+
   geom_boxplot()+
   facet_grid(~extremeWeatherDamage) #when accounting for extremeweatherDamage, it becomes sensitive
 
+#-----------------------step measures----------------------------
 
