@@ -205,7 +205,7 @@ to adapt-by-riskPerception
 ;     let riskPerception (item 0 freqDamage) * 0.2 + (item 1 freqDamage) * 0.3
       let riskPerception (item 0 freqDamage) * 0.2 + (item 2 freqDamage) * 0.3  ; item 0 is freq, item 2 is damage,
       print riskPerception
-      set riskPerceptionSum riskPerceptionSum + riskPerception
+      set riskPerceptionSum riskPerceptionSum + riskPercep
       print riskPerceptionSum
 
        ]

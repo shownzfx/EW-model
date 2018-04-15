@@ -147,9 +147,14 @@ experiment2 <- nl_experiment(
   repetitions = 3,
   
   param_values = list(
+    
+    # choose-strategy=c("rememberFrequency","rememberCumDamage",
+    #                   "rememberSevereDamage","doNothing")
+    # 
     intensityThreshold = c(0,0.5,0.8,1),   
     orgBudget = seq(0,3000,1000),
     repairRatio=c(0.5,0.8,1),
+    
     extremeWeatherDamage=c(0,5,10),
     adaptThreshold=seq(0,10,5),
     maxPrevention=seq(0,10,5),
@@ -158,11 +163,12 @@ experiment2 <- nl_experiment(
     damageRatioThreshold=c(0,0.1,0.25,0.5),
     numMonths=c(0,12,24,36),
     interval=c(0,11,23,35)
-    # choose-strategy=c("rememberFrequency", "rememberCumDamage")
-    # choose-strategy=c("rememberFrequency","rememberCumDamage",
-    #                   "rememberSevereDamage","doNothing")
-    # 
+    
   ),
+  
+  mapping = c(
+    choose-strategy=
+  )
   
   step_measures = measures(
     mean_infra_perTick="mean [infraQuality] of serviceArea",
