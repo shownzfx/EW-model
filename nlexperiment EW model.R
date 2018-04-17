@@ -147,10 +147,10 @@ experiment2 <- nl_experiment(
   repetitions = 3,
   
   param_values = list(
+
+    chooseStrategy=c("rememberFrequency","rememberCumDamage",
+                       "rememberSevereDamage","doNothing"),
     
-    # choose-strategy=c("rememberFrequency","rememberCumDamage",
-    #                   "rememberSevereDamage","doNothing")
-    # 
     intensityThreshold = c(0,0.5,0.8,1),   
     orgBudget = seq(0,3000,1000),
     repairRatio=c(0.5,0.8,1),
@@ -166,9 +166,7 @@ experiment2 <- nl_experiment(
     
   ),
   
-  mapping = c(
-    choose-strategy=
-  )
+  mapping=nl_default_mapping,
   
   step_measures = measures(
     mean_infra_perTick="mean [infraQuality] of serviceArea",
@@ -184,8 +182,9 @@ experiment2 <- nl_experiment(
     extreme_weather_frequency="extremeWeatherFreq",
     prevention="mean [prevention] of serviceArea",
     damage="mean [currentDamage] of serviceArea"
-  ),
+  )
 )
+
 
 results2_lessCombinations<-nl_run(experiment2,print_progress = T,parallel = T)
 results2<-nl_get_result(results2_lessCombinations)

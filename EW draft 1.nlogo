@@ -159,9 +159,10 @@ to adapt-by-severeDamage ; how severe is one single extreme weather event
 
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea  ; initial infra quality summed over serviceArea
   let damagedRatio map [i -> i / initialTotalInfraQuality] preWeatherDamage ; calculate aggregated damaged ratio
+  print max damagedRatio
 
-  let bigDamageRatio any-tippingRatio damagedRatio damageRatioThreshold
-  if bigDamageRatio = true [
+  let bigDamagedRatio any-tippingRatio damagedRatio damageRatioThreshold
+  if bigDamagedRatio = true [
 
 ;  let SevereDamaged filter [ i -> i > damageRatioThreshold] DamagedRatio ; how many damage are above the threshold, filter the list
 ;  if length SevereDamaged > 1 [ ; change to a slider (remember just one); two or three; or maybe the other thing;
@@ -203,14 +204,13 @@ to adapt-by-riskPerception
       set extremeFreqDamage fput extremeFreqDamage freqDamage
 ;      print extremeFreqDamage
 ;     let riskPerception (item 0 freqDamage) * 0.2 + (item 1 freqDamage) * 0.3
-      let riskPerception (item 0 freqDamage) * 0.2 + (item 2 freqDamage) * 0.3  ; item 0 is freq, item 2 is damage,
+      let riskPerception (item 0 freqDamage) * 0.2 + (item 2 freqDamage) * 0.3 + random-normal 0 1  ; item 0 is freq, item 2 is damage, also add some random errors
       print riskPerception
       set riskPerceptionSum riskPerceptionSum + riskPerception
       print riskPerceptionSum
 
        ]
     ])
-
 
 
 
@@ -229,7 +229,9 @@ end
 ;  ; i want to incorporate this as riskPerction = frequency *b1 + damage * b2 + random errors, then model adaptation as if riskPerception > threshond, [adapt]
 ;  ; this would require operating on the two lists of same length. For example I need to filter the item in list 1 (whch keeps track of prob of extreme weather)
 ;  with random float 1 > intensity threshold, then for each of the item selected from list 1, I will find the corresponding item in list 2 (damage) to get its damage
-; that way I can have both freq and damage from the same extreme event and factor them in the function for risk perception.
+; that way I can have both freq (using the list of preWeatherExp and preWeatherDamage does not capture freq directly; instead I had to add 1 to the parallel list to
+;  indicate each eligible list is of freq 1) and damage from the same extreme event and factor them in the function for risk perception.
+;
 
 
 
@@ -842,14 +844,14 @@ NIL
 HORIZONTAL
 
 CHOOSER
-395
-460
-582
-505
+400
+420
+587
+465
 chooseStrategy
 chooseStrategy
 "rememberFrequency" "rememberCumDamage" "rememberSevereDamage" "riskPerception" "doNothing"
-3
+2
 
 SLIDER
 210
@@ -859,8 +861,8 @@ SLIDER
 damageRatioThreshold
 damageRatioThreshold
 0
-1
-0.21
+0.5
+0.06
 0.01
 1
 NIL
@@ -941,10 +943,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot sum [orgVulnerability] of orgs"
 
 SLIDER
-435
-515
-612
-548
+400
+475
+577
+508
 riskPerceptionThreshold
 riskPerceptionThreshold
 0
