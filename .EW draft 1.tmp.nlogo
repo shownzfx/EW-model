@@ -192,7 +192,7 @@ to adapt-by-riskPerception
    let extremeFreqDamage [] ; docs both freq and damage in a list
    let riskPerceptionSum 0  ;
 
-;print
+;
 
   (foreach preWeatherExp preWeatherDamage [
     [a b] ->
