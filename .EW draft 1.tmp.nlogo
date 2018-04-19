@@ -71,7 +71,7 @@ end
 
 to go
   check-weather ; check weather every tick, a tick is a month
-  if ticks mod 12 = 0 [ask orgs [renew-budget]]
+  if ticks mod 12 = 0 [arenew-budget]
 
   if ticks mod numMonths = 0 ; renew budget every numMonth (slider) with an increment of 12;
   [
