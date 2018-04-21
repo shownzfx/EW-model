@@ -10,5 +10,5 @@
 #SBATCH --mail-type=ALL             # Send a notification when the job starts, stops, or fails
 #SBATCH --mail-user=fzhang59@asu.edu # send-to address
 
-bash Rscript "nlexperiment EW model.R"
+bash Rscript "nlexperiment OAT.R"
 date
