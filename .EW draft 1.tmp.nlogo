@@ -71,7 +71,7 @@ end
 
 to go
   check-weather ; check weather every tick, a tick is a month
-  if ticks mod 12 = 0 [arenew-budget]
+  if ticks mod 12 = 0 [ask orgs [renew-budget]]
 
   if ticks mod numMonths = 0 ; renew budget every numMonth (slider) with an increment of 12;
   [
@@ -119,7 +119,8 @@ to adapt-strategy
 end
 
 to adapt-by-EWfreq
-  let preWeatherExp sublist orgWeatherExp 0 min list interval length orgWeatherExp ; interval is a slider to show how many months do orgs remembers and checks stategy
+  let preWeatherExp sublist orgWeatherExp 0 min list (interval - 1) length orgWeatherExp ; interval is a slider to show how many months do orgs remembers and checks stategy,
+                                                                                         ; it is interval - 1 to indicate the starting item in the list is 0 not 1
   set orgextremeWeatherFreq filter [ i -> i > intensityThreshold] preWeatherExp
 
   if length orgextremeWeatherFreq >= adaptThreshold  ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
@@ -136,7 +137,7 @@ end
 
 to adapt-by-CumDamage
 
-  let preWeatherDamage sublist damageExp 0 min (list interval length damageExp)
+  let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp)
   let preCumDamage sum preWeatherDamage  ; how much damage occurred during the period (defined by the slider "interval"); cumulatively
 
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea
@@ -154,7 +155,7 @@ end
 
 to adapt-by-severeDamage ; how severe is one single extreme weather event
 
-  let preWeatherDamage sublist damageExp 0 min (list interval length damageExp)
+  let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp)
 
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea  ; initial infra quality summed over serviceArea
   let damagedRatio map [i -> i / initialTotalInfraQuality] preWeatherDamage ; calculate aggregated damaged ratio
@@ -186,8 +187,8 @@ end
 
 
 to adapt-by-riskPerception
-   let preWeatherExp sublist orgWeatherExp 0 min list interval length orgWeatherExp ; a list docs weather intensity for each tick (filtered through the timeframe we defined)
-   let preWeatherDamage sublist damageExp 0 min (list interval length damageExp) ; a list docs weather damage for each tick (filtered through the timeframe we defined)
+   let preWeatherExp sublist orgWeatherExp 0 min list (interval - 1) length orgWeatherExp ; a list docs weather intensity for each tick (filtered through the timeframe we defined)
+   let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp) ; a list docs weather damage for each tick (filtered through the timeframe we defined)
    let extremeFreqDamage [] ; docs both freq and damage in a list
    let riskPerceptionSum 0  ;
 
@@ -311,7 +312,7 @@ end
 
 ;to record-damage-memory ; currently not use in the model
 ; ask orgs [
-;    if length damageExp > maxMemoryLength ; maxMemoryLength is a slider
+;    if length damageExp > maxMemoryLength ;  is a slider
 ;    [set damageExp remove-item 0 damageExp]  ; forget the damage from the oldest event;
 ; ]
 ;end
@@ -743,7 +744,7 @@ ExtremeWeatherDamage
 ExtremeWeatherDamage
 0
 20
-7.0
+8.0
 1
 1
 NIL
@@ -827,21 +828,6 @@ adaptCostPerUnit
 NIL
 HORIZONTAL
 
-SLIDER
-210
-345
-382
-378
-maxMemoryLength
-maxMemoryLength
-0
-10
-2.0
-1
-1
-NIL
-HORIZONTAL
-
 CHOOSER
 400
 420
@@ -850,7 +836,7 @@ CHOOSER
 chooseStrategy
 chooseStrategy
 "rememberFrequency" "rememberCumDamage" "rememberSevereDamage" "riskPerception" "doNothing"
-2
+3
 
 SLIDER
 210
@@ -887,8 +873,8 @@ interval
 interval
 0
 100
-22.0
-11
+36.0
+12
 1
 NIL
 HORIZONTAL

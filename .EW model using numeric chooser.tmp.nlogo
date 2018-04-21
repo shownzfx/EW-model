@@ -94,32 +94,33 @@ end
 
 
 to adapt-strategy
-  if chooseStrategy = "rememberFrequency" [ ; remember EW by frequency it happens
+  if chooseStrategy = "1" [ ; remember EW by frequency it happens;  1=rememberFrequency; changed to numeric for r experiment to run
     adapt-by-EWfreq
   ]
 
-  if chooseStrategy = "rememberCumDamage" [
+  if chooseStrategy =  [ ;2= rememberCumDamage
     adapt-by-CumDamage ; adapt depending on cumulative damage over the past year
   ]
 
-  if chooseStrategy ="rememberSevereDamage"[
+  if chooseStrategy = 3 [  ;rememberSevereDamage=3
     adapt-by-severeDamage ; adapt depending on
   ]
 
 
-  if chooseStrategy = "riskPerception" [
+  if chooseStrategy = 4 [ ; 4=riskPerception
     adapt-by-riskPerception
   ]
 
 
-  if chooseStrategy = "doNothing" [
+  if chooseStrategy = 5 [ ; 5=doNothing
     not-adapt
   ]
 
 end
 
 to adapt-by-EWfreq
-  let preWeatherExp sublist orgWeatherExp 0 min list interval length orgWeatherExp ; interval is a slider to show how many months do orgs remembers and checks stategy
+  let preWeatherExp sublist orgWeatherExp 0 min list (interval - 1) length orgWeatherExp ; interval is a slider to show how many months do orgs remembers and checks stategy,
+                                                                                         ; it is interval - 1 to indicate the starting item in the list is 0 not 1
   set orgextremeWeatherFreq filter [ i -> i > intensityThreshold] preWeatherExp
 
   if length orgextremeWeatherFreq >= adaptThreshold  ; if in the last year exp a certain number of extreme events (slider adaptThreshold), adapt
@@ -136,7 +137,7 @@ end
 
 to adapt-by-CumDamage
 
-  let preWeatherDamage sublist damageExp 0 min (list interval length damageExp)
+  let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp)
   let preCumDamage sum preWeatherDamage  ; how much damage occurred during the period (defined by the slider "interval"); cumulatively
 
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea
@@ -154,7 +155,7 @@ end
 
 to adapt-by-severeDamage ; how severe is one single extreme weather event
 
-  let preWeatherDamage sublist damageExp 0 min (list interval length damageExp)
+  let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp)
 
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea  ; initial infra quality summed over serviceArea
   let damagedRatio map [i -> i / initialTotalInfraQuality] preWeatherDamage ; calculate aggregated damaged ratio
@@ -186,10 +187,11 @@ end
 
 
 to adapt-by-riskPerception
-   let preWeatherExp sublist orgWeatherExp 0 min list interval length orgWeatherExp ; a list docs weather intensity for each tick (filtered through the timeframe we defined)
-   let preWeatherDamage sublist damageExp 0 min (list interval length damageExp) ; a list docs weather damage for each tick (filtered through the timeframe we defined)
+   let preWeatherExp sublist orgWeatherExp 0 min list (interval - 1) length orgWeatherExp ; a list docs weather intensity for each tick (filtered through the timeframe we defined)
+   let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp) ; a list docs weather damage for each tick (filtered through the timeframe we defined)
    let extremeFreqDamage [] ; docs both freq and damage in a list
    let riskPerceptionSum 0  ;
+
 
 
 
@@ -743,7 +745,7 @@ ExtremeWeatherDamage
 ExtremeWeatherDamage
 0
 20
-20.0
+8.0
 1
 1
 NIL
@@ -834,8 +836,8 @@ CHOOSER
 465
 chooseStrategy
 chooseStrategy
-"rememberFrequency" "rememberCumDamage" "rememberSevereDamage" "riskPerception" "doNothing"
-2
+1 2 3 4 5
+3
 
 SLIDER
 210
@@ -872,8 +874,8 @@ interval
 interval
 0
 100
-22.0
-11
+12.0
+12
 1
 NIL
 HORIZONTAL
