@@ -19,7 +19,7 @@ module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlo
 experimentEW1 <- nl_experiment(
   model_file = module_file_path,
   iterations = 120,
-  repetitions = 100,
+ 
   
   param_values = nl_param_oat(
     n=25,
@@ -58,12 +58,14 @@ experimentEW1 <- nl_experiment(
     whetherAdapt="[whetherAdapt] of orgs",
     step_prevention="mean [prevention] of serviceArea", 
     step_repair_cost="sum [repairCost] of serviceArea",
-    step_meanDamage= "mean [damagePerTick] of serviceArea"
+    step_meanDamage= "mean [damagePerTick] of serviceArea" 
     
-  )
+  ),
+  repetitions = 100
+  #random_seed = 1:100
 )
 
 
 resultEW1<-nl_run(experimentEW1,parallel = T,print_progress = T)
 resultEW1_backup <- resultEW1
-write.csv(resultsEW1,"nlexperiment results.csv")
+write.csv(resultsEW1,"/home/fzhang59/dev/EW-model/nlexperiment results.csv")
