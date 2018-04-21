@@ -68,4 +68,6 @@ experimentEW1 <- nl_experiment(
 
 resultEW1<-nl_run(experimentEW1,parallel = T,print_progress = T)
 resultEW1_backup <- resultEW1
+
+
 write.csv(resultsEW1,"/home/fzhang59/dev/EW-model/nlexperiment results.csv")
