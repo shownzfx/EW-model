@@ -10,5 +10,6 @@
 #SBATCH --mail-type=ALL             # Send a notification when the job starts, stops, or fails
 #SBATCH --mail-user=fzhang59@asu.edu # send-to address
 
-bash module load rstudio/1.1.423 ; Rscript "nlexperiment OAT.R"
+module load rstudio/1.1.423
+srun Rscript nlexperiment_OAT_S1.R
 date
