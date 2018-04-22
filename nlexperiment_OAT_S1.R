@@ -1,4 +1,9 @@
-#EW model experiments
+#EW model experiments Scenario 1
+
+
+#xlcFreeMemory()
+rm(list = ls())
+options(java.parameters = "-Xmx8g")
 
 # Windows
 # library(nlexperiment)

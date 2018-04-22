@@ -1,11 +1,15 @@
-#EW model experiments
+#EW model experiments scenario 2
+
+#xlcFreeMemory()
+rm(list = ls())
+options(java.parameters = "-Xmx8g")
 
 # Windows
-# library(nlexperiment)
-# nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
-# nl_netlogo_path()
-# setwd("C:/Users/shown/Documents/GitHub/EW-model")
-# module_file_path="C:/Users/shown/Documents/GitHub/EW-model/EW model using numeric chooser.nlogo"
+library(nlexperiment)
+nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
+nl_netlogo_path()
+setwd("C:/Users/shown/Documents/GitHub/EW-model")
+module_file_path="C:/Users/shown/Documents/GitHub/EW-model/EW model using numeric chooser.nlogo"
 
 # AGAVE
 library(nlexperiment)
@@ -16,7 +20,7 @@ module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlo
 
 #---use one scenario at one time--------------
 
-experimentEW1 <- nl_experiment(
+experimentEW2 <- nl_experiment(
   model_file = module_file_path,
   iterations = 120,
  
@@ -66,8 +70,13 @@ experimentEW1 <- nl_experiment(
 )
 
 
-resultEW1<-nl_run(experimentEW1,parallel = T,print_progress = F)
-resultEW1_backup <- resultEW1
+resultEW2<-nl_run(experimentEW2,parallel = T,print_progress = F)
+
+resultEW2_backup <- resultEW2
+
+resultEW2_run<-nl_get_run_result(resultEW2)
+resultEW2_step<-nl_get_step_result(resultEW2)
 
 
-write.csv(resultsEW1,"/home/fzhang59/dev/EW-model/nlexperiment results.csv")
+
+write.csv(resultsEW2,"/home/fzhang59/dev/EW-model/nlexperimentS2 results.csv")
