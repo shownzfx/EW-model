@@ -3,15 +3,15 @@
 #xlcFreeMemory()
 rm(list = ls())
 options(java.parameters = "-Xmx8g")
-lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
+#lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
 (.packages())
 warnings()
 # Windows
-library(nlexperiment)
-nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
-nl_netlogo_path()
-setwd("C:/Users/shown/Documents/GitHub/EW-model")
-module_file_path="C:/Users/shown/Documents/GitHub/EW-model/EW model using numeric chooser.nlogo"
+# library(nlexperiment)
+# nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
+# nl_netlogo_path()
+# setwd("C:/Users/shown/Documents/GitHub/EW-model")
+# module_file_path="C:/Users/shown/Documents/GitHub/EW-model/EW model using numeric chooser.nlogo"
 
 # AGAVE
 library(nlexperiment)
