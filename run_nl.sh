@@ -10,5 +10,10 @@
 #SBATCH --mail-type=ALL             # Send a notification when the job starts, stops, or fails
 #SBATCH --mail-user=fzhang59@asu.edu # send-to address
 
-srun Rscript nlexperiment_OAT_S1.R
+bash  /home/fzhang59/netlogo-headless.sh \
+--model /home/fzhang59/dev/EW-model/EW\ model\ using\ numeric\ chooser.nlogo \
+--experiment experiment_2 \
+--table /home/fzhang59/TEST_1_8-$SLURM_ARRAYID.csv \
+--threads 28
+
 date

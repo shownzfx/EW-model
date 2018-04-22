@@ -22,7 +22,7 @@ experimentEW1 <- nl_experiment(
  
   
   param_values = nl_param_oat(
-    n=25,
+    n=1,
     intensityThreshold = c(0,0.5,1),
     orgBudget = c(0,4000,2000),
     repairRatio=c(0,1,0.5),
@@ -61,12 +61,12 @@ experimentEW1 <- nl_experiment(
     step_meanDamage= "mean [damagePerTick] of serviceArea" 
     
   ),
-  repetitions = 100
+  repetitions = 1
   #random_seed = 1:100
 )
 
 
-resultEW1<-nl_run(experimentEW1,parallel = T,print_progress = T)
+resultEW1<-nl_run(experimentEW1,parallel = T,print_progress = F)
 resultEW1_backup <- resultEW1
 
 
