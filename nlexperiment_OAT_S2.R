@@ -3,7 +3,9 @@
 #xlcFreeMemory()
 rm(list = ls())
 options(java.parameters = "-Xmx8g")
-
+lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
+(.packages())
+warnings()
 # Windows
 library(nlexperiment)
 nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
@@ -20,7 +22,7 @@ module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlo
 
 #---use one scenario at one time--------------
 
-experimentEW2 <- nl_experiment(
+experimentS2 <- nl_experiment(
   model_file = module_file_path,
   iterations = 120,
  
@@ -70,13 +72,13 @@ experimentEW2 <- nl_experiment(
 )
 
 
-resultEW2<-nl_run(experimentEW2,parallel = T,print_progress = F)
+resultS2<-nl_run(experimentS2,parallel = T,print_progress = F)
 
-resultEW2_backup <- resultEW2
+resultS2_backup <- resultS2
 
-resultEW2_run<-nl_get_run_result(resultEW2)
-resultEW2_step<-nl_get_step_result(resultEW2)
+resultS2_run<-nl_get_run_result(resultS2)
+resultS2_step<-nl_get_step_result(resultS2)
 
 
 
-write.csv(resultsEW2,"/home/fzhang59/dev/EW-model/nlexperimentS2 results.csv")
+write.csv(resultsS2,"/home/fzhang59/dev/EW-model/nlexperimentS2 results.csv")

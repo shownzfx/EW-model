@@ -21,7 +21,7 @@ module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlo
 
 #---use one scenario at one time--------------
 
-experimentEW1 <- nl_experiment(
+experimentS1 <- nl_experiment(
   model_file = module_file_path,
   iterations = 120,
  
@@ -71,8 +71,8 @@ experimentEW1 <- nl_experiment(
 )
 
 
-resultEW1<-nl_run(experimentEW1,parallel = T,print_progress = T)
-resultEW1_backup <- resultEW1
+resultS1<-nl_run(experimentS1,parallel = T,print_progress = T)
+resultS1_backup <- resultS1
 
 
-write.csv(resultsEW1,"/home/fzhang59/dev/EW-model/nlexperiment results.csv")
+write.csv(resultsS1,"/home/fzhang59/dev/EW-model/nlexperimentS1 results.csv")
