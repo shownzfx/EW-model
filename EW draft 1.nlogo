@@ -835,7 +835,7 @@ CHOOSER
 chooseStrategy
 chooseStrategy
 "rememberFrequency" "rememberCumDamage" "rememberSevereDamage" "riskPerception" "doNothing"
-2
+0
 
 SLIDER
 210
@@ -1366,25 +1366,28 @@ NetLogo 6.0.2
       <value value="10"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="experiment2" repetitions="2" runMetricsEveryStep="true">
+  <experiment name="experiment0422" repetitions="2" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <exitCondition>ticks = 120</exitCondition>
     <metric>mean [infraQuality] of serviceArea</metric>
     <metric>mean [infraVulnerability] of serviceArea</metric>
-    <metric>mean [currentDamage] of serviceArea</metric>
+    <metric>mean [damagePerTick] of serviceArea</metric>
     <metric>extremeWeatherFreq</metric>
     <metric>mean [prevention] of serviceArea</metric>
     <enumeratedValueSet variable="numMonths">
+      <value value="12"/>
       <value value="24"/>
+      <value value="36"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="adaptThreshold">
-      <value value="4"/>
-    </enumeratedValueSet>
+    <steppedValueSet variable="adaptThreshold" first="2" step="1" last="5"/>
     <enumeratedValueSet variable="adaptCostPerUnit">
       <value value="1"/>
+      <value value="2"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="intensityThreshold">
+      <value value="0.1"/>
+      <value value="0.5"/>
       <value value="0.8"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="damageRatioThreshold">
@@ -1394,9 +1397,14 @@ NetLogo 6.0.2
     </enumeratedValueSet>
     <enumeratedValueSet variable="repairRatio">
       <value value="0.5"/>
+      <value value="0.7"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="choose-strategy">
       <value value="&quot;rememberFrequency&quot;"/>
+      <value value="&quot;rememberSevereDamage&quot;"/>
+      <value value="&quot;rememberCumDamage&quot;"/>
+      <value value="&quot;rememberFrequency&quot;"/>
+      <value value="&quot;doNothing&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="interval">
       <value value="11"/>
@@ -1423,6 +1431,64 @@ NetLogo 6.0.2
       <value value="2"/>
       <value value="5"/>
       <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="riskPeceptionThreshold">
+      <value value="5"/>
+      <value value="60"/>
+      <value value="120"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="interval">
+      <value value="12"/>
+      <value value="24"/>
+      <value value="36"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <exitCondition>ticks = 120</exitCondition>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="numMonths">
+      <value value="12"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="adaptThreshold">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="adaptCostPerUnit">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="chooseStrategy">
+      <value value="&quot;rememberFrequency&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="intensityThreshold">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="damageRatioThreshold">
+      <value value="0.06"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="repairRatio">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="interval">
+      <value value="22"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="changeRepairRatio?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="maxPrevention">
+      <value value="12"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="orgBudget">
+      <value value="1500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ExtremeWeatherDamage">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="cumDamageRatioThreshold">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="riskPerceptionThreshold">
+      <value value="92"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
