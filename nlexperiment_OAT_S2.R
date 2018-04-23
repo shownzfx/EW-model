@@ -2,7 +2,7 @@
 # 
 # #xlcFreeMemory()
 # rm(list = ls())
-# options(java.parameters = "-Xmx8g")
+options(java.parameters = "-Xmx4g")
 # #lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
 # (.packages())
 # warnings()
