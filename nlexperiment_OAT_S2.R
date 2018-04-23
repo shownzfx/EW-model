@@ -29,7 +29,7 @@ experimentS2 <- nl_experiment(
  
   
   param_values = nl_param_oat(
-    n=1,
+    n=25,
     intensityThreshold = c(0,0.5,1),
     orgBudget = c(0,4000,2000),
     repairRatio=c(0,1,0.5),
