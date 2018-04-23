@@ -1,11 +1,13 @@
-#EW model experiments Scenario 1
-
-
-#xlcFreeMemory()
-rm(list = ls())
-options(java.parameters = "-Xmx8g")
-
-# Windows
+# #EW model experiments scenario 1
+# 
+# #xlcFreeMemory()
+# rm(list = ls())
+# options(java.parameters = "-Xmx8g")
+# #lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
+# (.packages())
+# warnings()
+# 
+# # Windows
 # library(nlexperiment)
 # nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
 # nl_netlogo_path()
@@ -71,8 +73,15 @@ experimentS1 <- nl_experiment(
 )
 
 
-resultS1<-nl_run(experimentS1,parallel = T,print_progress = T)
+resultS1<-nl_run(experimentS1,parallel = T,print_progress = F)
+
 resultS1_backup <- resultS1
 
+resultS1_run<-nl_get_run_result(resultS1)
+resultS1_step<-nl_get_step_result(resultS1)
 
-write.csv(resultsS1,"/home/fzhang59/dev/EW-model/nlexperimentS1 results.csv")
+dim(resultS1_run)
+dim(resultS1_step)
+
+write.csv(resultS1_run,"/home/fzhang59/dev/EW-model/nlexperimentS1 run results.csv")
+write.csv(resultS1_step,"/home/fzhang59/dev/EW-model/nlexperimentS1 step results.csv")

@@ -18,16 +18,22 @@ module_file_path="/home/fzhang59/dev/EW-model/EW draft 1.nlogo"
 
 experiment <- nl_experiment(
   model_file = module_file_path,
-  iterations = 100,
-  repetitions = 3,
+  iterations = 120,
+  repetitions = 100,
   
-  param_values = list(
-    intensityThreshold = seq(0,1,0.2),   
-    orgBudget = seq(0,500,100),
-    repairRatio=seq(0,1,0.2),
-    extremeWeatherDamage=seq(0,20,5),
-    adaptThreshold=seq(0,20,5),
-    maxPrevention=seq(0,20,5)
+  param_values = nl_param_oat(
+    intensityThreshold = c(0,0.5,1),
+    orgBudget = c(0,4000,2000)
+    repairRatio=c(0,1,0.5),
+    extremeWeatherDamage=c(0,20,10),
+    adaptThreshold=c(0,10,5),
+    maxPrevention=c(0,20,10),
+    damageRatioThreshold=c(0,0.3,0.15),
+    interval=c(0,48,24),
+    numMonths = c(0,48,24),
+    chooseStrategy= c("rememberFrequency","rememberCumDamage","rememberSevereDamage",
+                      "riskPerception","doNothing"),
+    riskPerceptionThreshold=c(0,150,75)
   ),
   # mapping = c(
   #   intensity_threshold="intensity-threshold",
@@ -39,15 +45,27 @@ experiment <- nl_experiment(
   # ),
   
   run_measures=measures(
-   mean_infra="mean [infraQuality] of serviceArea",
-   org_repair_budget="[orgRepairBudget] of orgs",
-   org_vulnerability = "mean [infraVulnerability] of serviceArea",
-   repair_cost="sum [repairCost] of serviceArea",
-   extreme_weather_frequency="extremeWeatherFreq",
-   prevention="mean [prevention] of serviceArea", 
-   damage="mean [currentDamage] of serviceArea"
+    mean_infra="mean [infraQuality] of serviceArea",
+    org_repair_budget="[orgRepairBudget] of orgs",
+    org_vulnerability = "[orgVulnerability] of orgs",
+    repair_cost="sum [repairCost] of serviceArea",
+    extreme_weather_frequency="extremeWeatherFreq",
+    prevention="mean [prevention] of serviceArea", 
+    damage="mean [damagePerTick] of serviceArea",
+    NumAdapt="sum [adaptTime] of orgs",
   ),
+  
+  step_measures=measures(
+    step_infraQuality="mean [infraQuality] of serviceArea",
+    step_orgVul= "[orgVulnerability] of orgs",
+    whetherAdapt="[whetherAdapt] of orgs",
+    step_prevention="mean [prevention] of serviceArea", 
+    step_repair_cost="sum [repairCost] of serviceArea",
+    step_meanDamage= "mean [damagePerTick] of serviceArea"
+    
+  )
 )
+
 
 
 results<-nl_run(experiment,parallel = T,print_progress = T)
@@ -143,17 +161,17 @@ ggplot(results1,aes(x=factor(adaptThreshold),y=mean_infra))+
 #experiment 2 with less combinations
 experiment2 <- nl_experiment(
   model_file = module_file_path,
-  iterations = 100,
-  repetitions = 3,
+  iterations = 120,
+  repetitions = 100,
   
   param_values = list(
 
-    chooseStrategy=c("rememberFrequency","rememberCumDamage",
+    chooseStrategy=c("rememberFrequency","rememberCumDamage","riskPerception",
                        "rememberSevereDamage","doNothing"),
     
-    intensityThreshold = c(0,0.5,0.8,1),   
+    intensityThreshold = seq(0,1,0.2),   
     orgBudget = seq(0,3000,1000),
-    repairRatio=c(0.5,0.8,1),
+    repairRatio=seq(),
     
     extremeWeatherDamage=c(0,5,10),
     adaptThreshold=seq(0,10,5),
