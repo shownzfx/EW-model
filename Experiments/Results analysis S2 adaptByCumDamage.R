@@ -29,7 +29,7 @@ experimentS2 <- nl_experiment(
     extremeWeatherDamage=c(0,20,10),
     adaptThreshold=c(0,10,5),
     maxPrevention=c(0,20,10),
-    cumDamageRatioThreshold=c(0,1)
+    cumDamageRatioThreshold=c(0,100,50),
     damageRatioThreshold=c(0,0.3,0.15),
     interval=c(0,48,24),
     numMonths = c(0,48,24),
@@ -71,6 +71,8 @@ experimentS2 <- nl_experiment(
 runS2<-read.csv(("~/GitHub/EW-model/Experiments/nlexperimentS2 run results.csv"))
 stepS2<-read.csv(("~/GitHub/EW-model/Experiments/nlexperimentS2 step results.csv"))
 
+
+
 nl_show_params(experimentS2)
 
 dplyr::count(runS2,param_set_id)
@@ -82,8 +84,6 @@ run_long<-gather_(runS2,key="parameter",value="value",c("intensityThreshold","or
 step_long<-gather_(stepS2,key="parameter",value="value",c("intensityThreshold","orgBudget",
                       "repairRatio","extremeWeatherDamage","adaptThreshold",   "maxPrevention",
                        "damageRatioThreshold","interval", "numMonths","riskPerceptionThreshold","chooseStrategy"))
-
-
 
 
 

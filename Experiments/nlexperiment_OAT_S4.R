@@ -84,5 +84,5 @@ resultS4_step<-nl_get_step_result(resultS4)
 dim(resultS4_run)
 dim(resultS4_step)
 
-write.csv(resultS4_run,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS4 run results.csv")
-write.csv(resultS4_step,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS4 step results.csv")
+write.csv(resultS4_run,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS4 run results.csv")
+write.csv(resultS4_step,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS4 step results.csv")

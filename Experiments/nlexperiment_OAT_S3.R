@@ -84,5 +84,5 @@ resultS3_step<-nl_get_step_result(resultS3)
 dim(resultS3_run)
 dim(resultS3_step)
 
-write.csv(resultS3_run,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS3 run results.csv")
-write.csv(resultS3_step,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS3 step results.csv")
+write.csv(resultS3_run,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS3 run results.csv")
+write.csv(resultS3_step,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS3 step results.csv")
