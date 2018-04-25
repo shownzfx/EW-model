@@ -41,7 +41,7 @@ experimentS3 <- nl_experiment(
     interval=c(0,48,24),
     numMonths = c(0,48,24),
     riskPerceptionThreshold=c(0,150,75),
-    chooseStrategy= 2
+    chooseStrategy= 3
   ),
   
   # mapping = c(
@@ -85,7 +85,7 @@ dim(resultS3_run)
 dim(resultS3_step)
 
 write.csv(resultS3_run,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS3 run results.csv")
-write.csv(resultS3_step,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS3 step results.csv")
+write.csv(resultS3_step,"/home/fzhang59/dev/EW-model/Experiments//nlexperimentS3 step results.csv")
 
 
 

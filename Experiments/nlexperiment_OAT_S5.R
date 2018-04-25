@@ -21,7 +21,7 @@ nl_netlogo_path()
 setwd("/home/fzhang59/dev/EW-model")
 module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlogo"
 
-#---use one scenario at one time--------------
+#---use one scenario at one time S1--------------
 
 experimentS5 <- nl_experiment(
   model_file = module_file_path,
@@ -40,7 +40,7 @@ experimentS5 <- nl_experiment(
     interval=c(0,48,24),
     numMonths = c(0,48,24),
     riskPerceptionThreshold=c(0,150,75),
-    chooseStrategy= 2
+    chooseStrategy= 5
   ),
   
   # mapping = c(
@@ -83,5 +83,9 @@ resultS5_step<-nl_get_step_result(resultS5)
 dim(resultS5_run)
 dim(resultS5_step)
 
-write.csv(resultS5_run,"/home/fzhang59/dev/EW-model/Experiment5/nlexperimentS5 run results.csv")
-write.csv(resultS5_step,"/home/fzhang59/dev/EW-model/Experiment5/nlexperimentS5 step results.csv")
+write.csv(resultS5_run,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS5 run results.csv")
+write.csv(resultS5_step,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS5 step results.csv")
+
+
+
+  
