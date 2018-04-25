@@ -94,11 +94,11 @@ end
 
 
 to adapt-strategy
-  if chooseStrategy = "1" [ ; remember EW by frequency it happens;  1=rememberFrequency; changed to numeric for r experiment to run
+  if chooseStrategy = 1 [ ; remember EW by frequency it happens;  1=rememberFrequency; changed to numeric for r experiment to run
     adapt-by-EWfreq
   ]
 
-  if chooseStrategy =  [ ;2= rememberCumDamage
+  if chooseStrategy = 2 [ ;2= rememberCumDamage
     adapt-by-CumDamage ; adapt depending on cumulative damage over the past year
   ]
 

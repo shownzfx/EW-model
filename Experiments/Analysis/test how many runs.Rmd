@@ -1,0 +1,71 @@
+---
+title: "Test how many runs"
+author: "Fengxiu"
+date: "April 24, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(stringi)
+library(ggplot2)
+setwd( "C:/Users/shown/Documents/GitHub/EW-model/Experiments")
+
+```
+
+##Scenario 2(S2) adapt by cumulative damage
+```{r}
+runS2<-read.csv(("~/GitHub/EW-model/Experiments/nlexperimentS2 run results.csv"))
+stepS2<-read.csv(("~/GitHub/EW-model/Experiments/nlexperimentS2 step results.csv"))
+```
+
+## Repetition Sensitivity Test 1 _S2
+
+###Sample from 100 reps S2
+```{r}
+
+sampleN<-function(n){
+  df<-matrix(NA,nrow=nrow(runS2)/100 * n,ncol = ncol(runS2))
+  df<-runS2 %>% filter(run_id %in% as.list(sample(1:100,n)))
+  df<-mutate(df,repetitions=n)
+  assign(paste0("sample",n),df,.GlobalEnv)
+  
+}
+sampleN(10)
+sampleN(20)
+sampleN(40)
+sampleN(80)
+sampleN(5)
+
+
+```
+
+## Compare the mean_infra S2
+
+```{r , echo=FALSE}
+runS2<-mutate(runS2, repetitions=100)
+rbind(runS2,sample10,sample20,sample40,sample80) %>% ggplot(.,aes(x=factor(repetitions), y=mean_infra))+
+  geom_boxplot()
+
+rbind(runS2,sample5) %>% t.test(mean_infra~factor(repetitions),data=.) #slightly significant
+rbind(runS2,sample10) %>% t.test(mean_infra~factor(repetitions),data=.)
+rbind(runS2,sample20) %>% t.test(mean_infra~factor(repetitions),data=.)
+rbind(runS2,sample40) %>% t.test(mean_infra~factor(repetitions),data=.)
+
+```
+## Compare org vulnerablity S2
+```{r}
+runS2<-mutate(runS2, repetitions=100)
+rbind(runS2,sample10,sample20,sample40,sample80) %>% ggplot(.,aes(x=factor(repetitions), y=mean_infra))+
+  geom_boxplot()
+
+
+
+rbind(runS2,sample5) %>% t.test(org_vulnerability~factor(repetitions),data=.) 
+rbind(runS2,sample10) %>% t.test(org_vulnerability~factor(repetitions),data=.)
+rbind(runS2,sample20) %>% t.test(org_vulnerability~factor(repetitions),data=.)
+rbind(runS2,sample40) %>% t.test(org_vulnerability~factor(repetitions),data=.)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,5 +1,4 @@
-# #EW model experiments scenario 1
-
+# #EW model experiments scenario 2
 # 
 # #xlcFreeMemory()
 # rm(list = ls())
@@ -24,10 +23,9 @@ module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlo
 
 #---use one scenario at one time--------------
 
-experimentS1 <- nl_experiment(
+experimentS5 <- nl_experiment(
   model_file = module_file_path,
-  iterations = 120,
- 
+  iterations = 10,
   
   param_values = nl_param_oat(
     n=25,
@@ -37,6 +35,7 @@ experimentS1 <- nl_experiment(
     extremeWeatherDamage=c(0,20,10),
     adaptThreshold=c(0,10,5),
     maxPrevention=c(0,20,10),
+    cumDamageRatioThreshold=c(0,100,50),
     damageRatioThreshold=c(0,0.3,0.15),
     interval=c(0,48,24),
     numMonths = c(0,48,24),
@@ -48,7 +47,7 @@ experimentS1 <- nl_experiment(
   #   intensity_threshold="intensity-threshold",
   #   org_budget="org-budget"
   # ),
-
+  
   run_measures=measures(
     mean_infra="mean [infraQuality] of serviceArea",
     org_repair_budget="[orgRepairBudget] of orgs",
@@ -74,15 +73,15 @@ experimentS1 <- nl_experiment(
 )
 
 
-resultS1<-nl_run(experimentS1,parallel = T,print_progress = F)
+resultS5<-nl_run(experimentS5,parallel = T,print_progress = F)
 
-resultS1_backup <- resultS1
+resultS5_backup <- resultS5
 
-resultS1_run<-nl_get_run_result(resultS1)
-resultS1_step<-nl_get_step_result(resultS1)
+resultS5_run<-nl_get_run_result(resultS5)
+resultS5_step<-nl_get_step_result(resultS5)
 
-dim(resultS1_run)
-dim(resultS1_step)
+dim(resultS5_run)
+dim(resultS5_step)
 
-write.csv(resultS1_run,"/home/fzhang59/dev/EW-model/nlexperimentS1 run results.csv")
-write.csv(resultS1_step,"/home/fzhang59/dev/EW-model/nlexperimentS1 step results.csv")
+write.csv(resultS5_run,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS5 run results.csv")
+write.csv(resultS5_step,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS5 step results.csv")

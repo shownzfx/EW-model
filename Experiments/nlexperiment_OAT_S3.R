@@ -23,10 +23,10 @@ module_file_path="/home/fzhang59/dev/EW-model/EW model using numeric chooser.nlo
 
 #---use one scenario at one time--------------
 
-experimentS2 <- nl_experiment(
+experimentS3 <- nl_experiment(
   model_file = module_file_path,
   iterations = 10,
- 
+  
   
   param_values = nl_param_oat(
     n=25,
@@ -36,6 +36,7 @@ experimentS2 <- nl_experiment(
     extremeWeatherDamage=c(0,20,10),
     adaptThreshold=c(0,10,5),
     maxPrevention=c(0,20,10),
+    cumDamageRatioThreshold=c(0,100,50),
     damageRatioThreshold=c(0,0.3,0.15),
     interval=c(0,48,24),
     numMonths = c(0,48,24),
@@ -47,7 +48,7 @@ experimentS2 <- nl_experiment(
   #   intensity_threshold="intensity-threshold",
   #   org_budget="org-budget"
   # ),
-
+  
   run_measures=measures(
     mean_infra="mean [infraQuality] of serviceArea",
     org_repair_budget="[orgRepairBudget] of orgs",
@@ -73,15 +74,15 @@ experimentS2 <- nl_experiment(
 )
 
 
-resultS2<-nl_run(experimentS2,parallel = T,print_progress = F)
+resultS3<-nl_run(experimentS3,parallel = T,print_progress = F)
 
-resultS2_backup <- resultS2
+resultS3_backup <- resultS3
 
-resultS2_run<-nl_get_run_result(resultS2)
-resultS2_step<-nl_get_step_result(resultS2)
+resultS3_run<-nl_get_run_result(resultS3)
+resultS3_step<-nl_get_step_result(resultS3)
 
-dim(resultS2_run)
-dim(resultS2_step)
+dim(resultS3_run)
+dim(resultS3_step)
 
-write.csv(resultS2_run,"/home/fzhang59/dev/EW-model/nlexperimentS2 run results.csv")
-write.csv(resultS2_step,"/home/fzhang59/dev/EW-model/nlexperimentS2 step results.csv")
+write.csv(resultS3_run,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS3 run results.csv")
+write.csv(resultS3_step,"/home/fzhang59/dev/EW-model/Experiment/nlexperimentS3 step results.csv")

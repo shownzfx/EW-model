@@ -140,7 +140,7 @@ to adapt-by-CumDamage
   let preCumDamage sum preWeatherDamage  ; how much damage occurred during the period (defined by the slider "interval"); cumulatively
 
   let initialTotalInfraQuality sum [initialInfraQuality] of serviceArea
-;  print preCumDamage / initialInfraQuality
+  print preCumDamage / initialInfraQuality
   if preCumDamage / initialInfraQuality > cumDamageRatioThreshold [
     set whetherAdapt true  ; total the total amount
     set adaptTime adaptTime + 1 ; keep track of how many times they adapted
@@ -647,7 +647,7 @@ orgBudget
 orgBudget
 0
 5000
-1500.0
+2000.0
 500
 1
 NIL
@@ -835,7 +835,7 @@ CHOOSER
 chooseStrategy
 chooseStrategy
 "rememberFrequency" "rememberCumDamage" "rememberSevereDamage" "riskPerception" "doNothing"
-0
+1
 
 SLIDER
 210
@@ -901,8 +901,8 @@ SLIDER
 cumDamageRatioThreshold
 cumDamageRatioThreshold
 0
-10
-2.0
+10O
+40.0
 1
 1
 NIL
@@ -1446,6 +1446,7 @@ NetLogo 6.0.2
   <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
+    <exitCondition>ticks = 120</exitCondition>
     <metric>count turtles</metric>
     <enumeratedValueSet variable="numMonths">
       <value value="12"/>
