@@ -88,3 +88,6 @@ dim(resultS1_step)
 
 write.csv(resultS1_run,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS1 run results.csv")
 write.csv(resultS1_step,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS1 step results.csv")
+
+
+
