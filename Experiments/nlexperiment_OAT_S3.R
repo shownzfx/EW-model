@@ -86,3 +86,6 @@ dim(resultS3_step)
 
 write.csv(resultS3_run,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS3 run results.csv")
 write.csv(resultS3_step,"/home/fzhang59/dev/EW-model/Experiments/nlexperimentS3 step results.csv")
+
+
+
