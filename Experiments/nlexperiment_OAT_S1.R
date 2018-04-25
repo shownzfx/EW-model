@@ -42,7 +42,7 @@ experimentS1 <- nl_experiment(
     interval=c(0,48,24),
     numMonths = c(0,48,24),
     riskPerceptionThreshold=c(0,150,75),
-    chooseStrategy= 2
+    chooseStrategy= 1
   ),
   
 
