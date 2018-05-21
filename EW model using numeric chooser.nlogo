@@ -94,25 +94,25 @@ end
 
 
 to adapt-strategy
-  if chooseStrategy = "1" [ ; remember EW by frequency it happens;  1=rememberFrequency
+  if chooseStrategy = 1 [ ; remember EW by frequency it happens;  1=rememberFrequency; changed to numeric for r experiment to run
     adapt-by-EWfreq
   ]
 
-  if chooseStrategy = "2" [ ;2= rememberCumDamage
+  if chooseStrategy = 2 [ ;2= rememberCumDamage
     adapt-by-CumDamage ; adapt depending on cumulative damage over the past year
   ]
 
-  if chooseStrategy ="3"[  ;rememberSevereDamage=3
+  if chooseStrategy = 3 [  ;rememberSevereDamage=3
     adapt-by-severeDamage ; adapt depending on
   ]
 
 
-  if chooseStrategy = "4" [ ; 4=riskPerception
+  if chooseStrategy = 4 [ ; 4=riskPerception
     adapt-by-riskPerception
   ]
 
 
-  if chooseStrategy = "5" [ ; 5=doNothing
+  if chooseStrategy = 5 [ ; 5=doNothing
     not-adapt
   ]
 
@@ -191,6 +191,7 @@ to adapt-by-riskPerception
    let preWeatherDamage sublist damageExp 0 min (list (interval - 1) length damageExp) ; a list docs weather damage for each tick (filtered through the timeframe we defined)
    let extremeFreqDamage [] ; docs both freq and damage in a list
    let riskPerceptionSum 0  ;
+
 
 
 
@@ -836,7 +837,7 @@ CHOOSER
 chooseStrategy
 chooseStrategy
 1 2 3 4 5
-0
+3
 
 SLIDER
 210
@@ -873,7 +874,7 @@ interval
 interval
 0
 100
-36.0
+12.0
 12
 1
 NIL

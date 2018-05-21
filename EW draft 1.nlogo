@@ -5,8 +5,6 @@ globals [
   weatherExp  ; a list documenting exp with weather for each tick
   extremeWeatherFreq ; a list documenting extreme weather frequency
   serviceArea ; the agency's service area
-
-
 ]
 
 orgs-own [; doc intensity of extreme weather
@@ -49,10 +47,8 @@ to setup
     set adaptTime 0
     set damageExp []
 
-
-
       ask patches in-radius 5 [
-        set owner 1
+        set owner myself
         set infraQuality random 100
         if infraQuality = 0 [set infraQuality 1] ; avoid dividing by zero
         set initialInfraQuality infraQuality
@@ -61,8 +57,9 @@ to setup
         update-pcolor
     ]
   ]
-  set serviceArea patches with [owner = 1] ; will be useful when we have more than one org
+
   ask orgs [
+    set serviceArea patches with [owner = myself] ; will be useful when we have more than one org
     update-vulnerability
     recolor
  ]
@@ -71,9 +68,9 @@ end
 
 to go
   check-weather ; check weather every tick, a tick is a month
-  if ticks mod 12 = 0 [ask orgs [renew-budget]]
+  if ticks mod 12 = 0 [ask orgs [renew-budget]] ; renew budget every numMonth (slider) with an increment of 12;
 
-  if ticks mod numMonths = 0 ; renew budget every numMonth (slider) with an increment of 12;
+  if ticks mod numMonths = 0
   [
     ask orgs
     [ adapt-strategy] ; I used a chooser to model the conditions under which orgs adapt]
@@ -103,7 +100,7 @@ to adapt-strategy
   ]
 
   if chooseStrategy ="rememberSevereDamage"[
-    adapt-by-severeDamage ; adapt depending on
+    adapt-by-severeDamage ; adapt depending on how severe the damage from one single event
   ]
 
 
@@ -128,9 +125,9 @@ to adapt-by-EWfreq
     set adaptTime adaptTime + 1
     adapt
     update-repairRatio ; they decide they want to change everything this year (before the adapt); or the
-   ] ;
+   ]
    set whetherAdapt false  ; after adaptation once, set adapt back to false
-   set orgextremeWeatherFreq [] ; restart the counter very
+   set orgextremeWeatherFreq [] ; restart the list for the next round of decision making, assuming orgs have a limited memory
 end
 
 
@@ -196,12 +193,12 @@ to adapt-by-riskPerception
   (foreach preWeatherExp preWeatherDamage [
     [a b] ->
     let freqDamage list  a b
-    set freqDamage fput 1 freqDamage ; 1 is the freq responding to each filtered event;
-   ; print freqDamage
+    set freqDamage fput 1 freqDamage ; 1 is the number of event responding to each filtered incident;
+
 
     if item 1 freqDamage > intensityThreshold [ ;filter only extreme weather, item 1 is the weather intensity
       set extremeFreqDamage fput extremeFreqDamage freqDamage
-;      print extremeFreqDamage
+
 ;     let riskPerception (item 0 freqDamage) * 0.2 + (item 1 freqDamage) * 0.3
       let riskPerception (item 0 freqDamage) * 0.2 + (item 2 freqDamage) * 0.3 + random-normal 0 1  ; item 0 is freq, item 2 is damage, also add some random errors
       print riskPerception
@@ -214,7 +211,7 @@ to adapt-by-riskPerception
 
 
   if riskPerceptionSum >  riskPerceptionThreshold [
-   set whetherAdapt true  ; total the total amount
+    set whetherAdapt true  ; total the total amount
     set adaptTime adaptTime + 1
     adapt
     update-repairRatio
@@ -223,15 +220,6 @@ to adapt-by-riskPerception
 ;  print riskPerceptionSum
 
 end
-
-
-;  ; i want to incorporate this as riskPerction = frequency *b1 + damage * b2 + random errors, then model adaptation as if riskPerception > threshond, [adapt]
-;  ; this would require operating on the two lists of same length. For example I need to filter the item in list 1 (whch keeps track of prob of extreme weather)
-;  with random float 1 > intensity threshold, then for each of the item selected from list 1, I will find the corresponding item in list 2 (damage) to get its damage
-; that way I can have both freq (using the list of preWeatherExp and preWeatherDamage does not capture freq directly; instead I had to add 1 to the parallel list to
-;  indicate each eligible list is of freq 1) and damage from the same extreme event and factor them in the function for risk perception.
-;
-
 
 
 to not-adapt ; is there better way to model "do nothing maintaining the status quo"
@@ -261,7 +249,7 @@ to update-repairRatio ; this model applies to when orgs adapt, they also increas
 
 end
 
-to check-weather  ; rains every step
+to check-weather  ; check weather intensity every step
   set weatherIntensity random-float 1 ;
   set weatherExp fput weatherIntensity weatherExp
   ask orgs [
@@ -955,9 +943,9 @@ If the weather intensity < intensityThreshold, the organization does nothing and
 
 Every couple of years (we set the interval with the "interval" slider on the interface), the organization will look back at its experience with weather intensity and damage (both documented at each tick), and decide wheather it will adapt. The choose "choose-strategy" has five scenarios for orgs to adapt. I have detailed comments on each strategy on how it works.
 
-When adapting, organization will add prevention to each of its service patches. It loops across them by adding 1 to each, and then adding a second one to each after all the patches have added 1 already and adding a third one after all patches have added the 2nd one. It continues the looping until it runs out of money. 
+When adapting, organization will add prevention to each of its service patches. It loops across them by adding 1 to each, and then adding a second one to each after all the patches have finished the first round of looping and adding a third one after all patches have added the 2nd one. It continues the looping until it runs out of money. 
 
-NOTE: all params are set in an absract sense to capture the pattern. They make qualitative sense (aligns with the theory), but are not done quantitatively so far to validate with the reality. Consider this as a lab experiment to research something we cannot observe.
+NOTE: all params are set in an absract sense to capture the pattern. They make qualitative sense (aligns with the theory), but are not done quantitatively. Consider this as a lab experiment.
 
 
 
