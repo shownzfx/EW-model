@@ -1,20 +1,19 @@
 #EW model experiments
 
+
 # Windows
 library(nlexperiment)
 nl_netlogo_path("C:/Program Files/NetLogo 6.0.2/app")  #to netlogo installation on windows
 nl_netlogo_path()
 setwd("C:/Users/shown/Documents/GitHub/EW-model")
-module_file_path="C:/Users/shown/Documents/GitHub/EW-model/EW draft 1.nlogo"
+module_file_path = "C:/Users/shown/Documents/GitHub/EW-model/EW draft 1.nlogo"
 
 # AGAVE
 library(nlexperiment)
-nl_netlogo_path("/packages/7x/netlogo/6.0.2/app")  #to netlogo installation 
+nl_netlogo_path("/packages/7x/netlogo/6.0.2/app")  #to netlogo installation
 nl_netlogo_path()
 setwd("/home/fzhang59/dev/EW-model")
-module_file_path="/home/fzhang59/dev/EW-model/EW draft 1.nlogo"
-
-
+module_file_path = "/home/fzhang59/dev/EW-model/EW draft 1.nlogo"
 
 experiment <- nl_experiment(
   model_file = module_file_path,
